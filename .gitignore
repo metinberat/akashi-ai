@@ -1,0 +1,23 @@
+# Python virtual environments
+.venv/
+backend/.venv/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Secrets
+.env
+backend/.env
+
+# Local/private data
+backend/data/private/
+*.db
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db

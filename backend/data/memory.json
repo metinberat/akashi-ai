@@ -1,0 +1,42 @@
+{
+  "conversations": {
+    "metin-local-test": [
+      {
+        "role": "user",
+        "content": "Selam Akashi, bugün bana fizik çalıştır.",
+        "timestamp": "2026-06-22T18:37:26.072932+00:00",
+        "intent": null
+      },
+      {
+        "role": "assistant",
+        "content": "Akashi mock response: I received “Selam Akashi, bugün bana fizik çalıştır.”. Configure AI_PROVIDER=gemini to use a live model.",
+        "timestamp": "2026-06-22T18:37:26.074527+00:00",
+        "intent": null
+      },
+      {
+        "role": "user",
+        "content": "Bugün bana fizik çalıştır, elektrik alan çizgilerini anlamam lazım.",
+        "intent": "code",
+        "timestamp": "2026-06-22T18:45:38.523697+00:00"
+      },
+      {
+        "role": "assistant",
+        "content": "Engineering read: Bugün bana fizik çalıştır, elektrik alan çizgilerini anlamam lazım.\n\nApproach:\n- Clarify the expected input, output, and constraints.\n- Isolate the smallest testable component.\n- Implement it behind a clean interface.\n- Verify the happy path, edge cases, and failure behavior.\n\nShare the relevant code or error output and I can make this concrete.\n\nContext: I found 1 relevant earlier conversation turn(s).",
+        "intent": "code",
+        "timestamp": "2026-06-22T18:45:38.524198+00:00"
+      },
+      {
+        "role": "user",
+        "content": "Bugün bana fizik çalıştır, elektrik alan çizgilerini anlamam lazım.",
+        "intent": "study",
+        "timestamp": "2026-06-22T18:51:12.220717+00:00"
+      },
+      {
+        "role": "assistant",
+        "content": "Let's turn this into a focused study session: Bugün bana fizik çalıştır, elektrik alan çizgilerini anlamam lazım.\n\n1. Define the exact learning goal.\n2. Review the core idea in plain language.\n3. Work through one guided example.\n4. Test recall with three short questions.\n5. Finish with a brief summary and next step.\n\nContext: I found 1 relevant earlier conversation turn(s).",
+        "intent": "study",
+        "timestamp": "2026-06-22T18:51:12.221714+00:00"
+      }
+    ]
+  }
+}
