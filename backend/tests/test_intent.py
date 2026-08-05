@@ -26,6 +26,15 @@ class IntentAnalyzerTests(unittest.TestCase):
             "study",
         )
 
+
+    def test_working_phrase_is_not_study(self) -> None:
+        self.assertEqual(
+            analyze_intent(
+                "Selam Akashi. Şu anda hangi sistem üzerinden çalışıyorsun?"
+            ),
+            "casual",
+        )
+
     def test_code_message(self) -> None:
         self.assertEqual(
             analyze_intent("Debug this FastAPI endpoint traceback."),

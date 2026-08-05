@@ -10,7 +10,7 @@ INTENT_KEYWORDS: Dict[Intent, Sequence[str]] = {
         "homework", "teach", "explain", "question solving", "take notes",
         "summary", "physics", "chemistry", "biology", "math", "mathematics",
         "literature", "history", "geography", "philosophy",
-        "ders", "çalış", "çalıştır", "konu", "sınav", "test", "soru", "çöz",
+        "ders", "ders çalış", "çalıştır", "konu", "sınav", "test", "soru", "çöz",
         "anlat", "öğren", "fizik", "kimya", "biyoloji", "matematik",
         "edebiyat", "tarih", "coğrafya", "felsefe", "elektrik alan",
         "parabol", "molarite", "sindirim", "özet", "not çıkar",
@@ -43,13 +43,13 @@ STUDY_OVERRIDE_KEYWORDS: Tuple[str, ...] = (
     "study", "studying", "lesson", "exam", "homework", "question solving",
     "physics", "chemistry", "biology", "math", "mathematics",
     "literature", "history", "geography", "philosophy",
-    "ders", "çalış", "sınav", "soru", "çöz", "öğren",
+    "ders", "ders çalış", "çalıştır", "sınav", "soru", "çöz", "öğren",
     "fizik", "kimya", "biyoloji", "matematik", "edebiyat", "tarih",
     "coğrafya", "felsefe", "elektrik alan", "parabol", "molarite", "sindirim",
 )
 
 PREFIX_KEYWORDS = {
-    "ders", "çalış", "çalıştır", "konu", "sınav", "soru", "çöz", "anlat",
+    "ders", "ders çalış", "çalıştır", "konu", "sınav", "soru", "çöz", "anlat",
     "öğren", "fizik", "kimya", "biyoloji", "matematik", "edebiyat",
     "coğrafya", "felsefe", "parabol", "molarite", "sindirim", "özet",
     "araştır", "kaynak", "makale", "planla", "takvim", "strateji",
