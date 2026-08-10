@@ -16,6 +16,9 @@ WORKFLOW_PATH = (
     Path(__file__).resolve().parents[2] / "workflows" / "z_image_fast_api.json"
 )
 
+class ImageRequest(BaseModel):
+    prompt: str
+
 
 class ImageTestResponse(BaseModel):
     prompt_id: str
@@ -41,7 +44,7 @@ def extract_image_urls(history_entry: dict) -> list[str]:
 
 
 @router.post("/fast-test", response_model=ImageTestResponse)
-async def fast_test_image() -> ImageTestResponse:
+async def fast_test_image(request: ImageRequest) -> ImageTestResponse:
     if not WORKFLOW_PATH.exists():
         raise HTTPException(
             status_code=500,
@@ -50,6 +53,8 @@ async def fast_test_image() -> ImageTestResponse:
 
     with WORKFLOW_PATH.open("r", encoding="utf-8") as f:
         workflow = json.load(f)
+    
+    workflow["57:27"]["inputs"]["text"] = request.prompt
 
     client_id = str(uuid.uuid4())
 
