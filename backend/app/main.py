@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+﻿from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.chat import router as chat_router
@@ -18,6 +19,17 @@ app = FastAPI(
     version=settings.app_version,
     description="Backend foundation for Akashi AI and the ABSOLUTE Engine.",
     default_response_class=UTF8JSONResponse,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(chat_router)
