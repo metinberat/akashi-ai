@@ -213,9 +213,9 @@ export default function Home() {
           <div className="system-card muted">
             <div>
               <span className="status-dot online" />
-              <strong>Görsel motoru hazır</strong>
+              <strong>Görsel motoru bağlı değil</strong>
             </div>
-            <small>ComfyUI · SDXL</small>
+            <small>Entegrasyon bekleniyor</small>
           </div>
         </div>
 

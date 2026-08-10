@@ -529,3 +529,273 @@ button {
     padding-inline: 14px;
   }
 }
+/* =========================================================
+   AKASHI UI — MONOCHROME PAPER OVERRIDE
+   ========================================================= */
+
+.workspace {
+  --text: #111111;
+  --muted: #5f5f63;
+  --faint: #85858a;
+  --border: rgba(0, 0, 0, 0.10);
+  --border-strong: rgba(0, 0, 0, 0.18);
+  --panel-soft: rgba(255, 255, 255, 0.72);
+  --panel-lifted: #ffffff;
+
+  position: relative;
+  overflow: hidden;
+  color: #111111;
+  background:
+    radial-gradient(
+      circle at 76% 18%,
+      rgba(0, 0, 0, 0.07),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 25% 70%,
+      rgba(0, 0, 0, 0.035),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #f7f7f3 0%,
+      #ededE8 45%,
+      #f7f7f3 100%
+    );
+}
+
+/* Hafif manga / baskı dokusu */
+.workspace::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.20;
+  background-image:
+    repeating-linear-gradient(
+      115deg,
+      transparent 0,
+      transparent 18px,
+      rgba(0, 0, 0, 0.045) 19px,
+      transparent 20px
+    );
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8),
+    transparent 70%
+  );
+}
+
+.topbar {
+  position: relative;
+  z-index: 5;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.11);
+  background: rgba(247, 247, 243, 0.76);
+  backdrop-filter: blur(22px);
+}
+
+.workspace .eyebrow {
+  color: #77777c;
+}
+
+.topbar h2 {
+  color: #111111;
+}
+
+.mode-badge {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: #55555a;
+}
+
+.chat-area {
+  position: relative;
+  z-index: 2;
+}
+
+.conversation {
+  width: min(960px, calc(100% - 70px));
+}
+
+.message-row + .message-row {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.workspace .message-avatar {
+  border-color: rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.78);
+  color: #111111;
+}
+
+.workspace .message-row.assistant .message-avatar {
+  background: #111111;
+  color: #ffffff;
+}
+
+.workspace .message-row.user .message-avatar {
+  background: rgba(255, 255, 255, 0.72);
+  color: #111111;
+}
+
+.workspace .message-heading strong {
+  color: #111111;
+}
+
+.workspace .message-heading span {
+  color: #77777c;
+}
+
+.workspace .message-content p {
+  color: #202024;
+}
+
+.workspace .message-row.user .message-content p {
+  color: #55555a;
+}
+
+.composer-zone {
+  position: relative;
+  z-index: 5;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background:
+    linear-gradient(
+      to top,
+      rgba(247, 247, 243, 0.98) 58%,
+      rgba(247, 247, 243, 0.76)
+    );
+  backdrop-filter: blur(18px);
+}
+
+.composer {
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.10),
+    inset 0 1px rgba(255, 255, 255, 0.9);
+}
+
+.composer:focus-within {
+  border-color: rgba(0, 0, 0, 0.38);
+}
+
+.composer textarea {
+  color: #111111;
+}
+
+.composer textarea::placeholder {
+  color: #89898e;
+}
+
+.attach-button {
+  border-color: rgba(0, 0, 0, 0.11);
+  color: #77777c;
+}
+
+.send-button {
+  background: #111111;
+  color: #ffffff;
+}
+
+.composer-note {
+  color: #838388;
+}
+
+.suggestions button {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.68);
+  color: #5f5f63;
+}
+
+.suggestions button:hover {
+  border-color: rgba(0, 0, 0, 0.28);
+  color: #111111;
+}
+/* =========================================================
+   AKASHI UI — LEFT SIDEBAR LIGHT OVERRIDE
+   ========================================================= */
+
+.icon-rail {
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  background: #f1f1ed;
+}
+
+.monogram {
+  border-color: rgba(0, 0, 0, 0.18);
+  background: #111111;
+  color: #ffffff;
+}
+
+.rail-button {
+  color: #77777c;
+}
+
+.rail-button:hover,
+.rail-button.active {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.8);
+  color: #111111;
+}
+
+.rail-bottom {
+  color: #77777c;
+}
+
+.sidebar {
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(244, 244, 240, 0.97);
+  color: #111111;
+}
+
+.sidebar .eyebrow,
+.sidebar-label {
+  color: #77777c;
+}
+
+.sidebar h1 {
+  color: #111111;
+}
+
+.sidebar-description {
+  color: #66666b;
+}
+
+.new-chat {
+  border-color: #111111;
+  background: #111111;
+  color: #ffffff;
+}
+
+.new-chat:hover {
+  background: #2a2a2a;
+}
+
+.system-card {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.system-card strong {
+  color: #111111;
+}
+
+.system-card small {
+  color: #77777c;
+}
+
+.profile-card {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: #111111;
+  color: #ffffff;
+}
+
+.profile-card strong {
+  color: #111111;
+}
+
+.profile-card span {
+  color: #77777c;
+}
