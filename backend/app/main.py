@@ -1,10 +1,9 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
+from app.api.image import router as image_router
 from app.api.chat import router as chat_router
 from app.core.config import get_settings
-
 
 class UTF8JSONResponse(JSONResponse):
     """JSON responses with an explicit UTF-8 charset."""
@@ -33,7 +32,7 @@ app.add_middleware(
 )
 
 app.include_router(chat_router)
-
+app.include_router(image_router)
 
 @app.get("/health", tags=["system"])
 async def health() -> dict[str, str]:
