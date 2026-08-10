@@ -15,6 +15,9 @@ COMFY_BASE_URL = "http://127.0.0.1:8188"
 WORKFLOW_PATH = (
     Path(__file__).resolve().parents[2] / "workflows" / "z_image_fast_api.json"
 )
+QWEN_WORKFLOW_PATH = (
+    Path(__file__).resolve().parents[2] / "workflows" / "qwen_quality_api.json"
+)
 
 class ImageRequest(BaseModel):
     prompt: str
@@ -43,22 +46,22 @@ def extract_image_urls(history_entry: dict) -> list[str]:
     return image_urls
 
 
-@router.post("/fast-test", response_model=ImageTestResponse)
-async def fast_test_image(request: ImageRequest) -> ImageTestResponse:
-    if not WORKFLOW_PATH.exists():
+@router.post("/quality-test", response_model=ImageTestResponse)
+async def quality_test_image(request: ImageRequest) -> ImageTestResponse:
+    if not QWEN_WORKFLOW_PATH.exists():
         raise HTTPException(
             status_code=500,
-            detail=f"Workflow file not found: {WORKFLOW_PATH}",
+            detail=f"Workflow file not found: {QWEN_WORKFLOW_PATH}",
         )
 
-    with WORKFLOW_PATH.open("r", encoding="utf-8") as f:
+    with QWEN_WORKFLOW_PATH.open("r", encoding="utf-8") as f:
         workflow = json.load(f)
     
-    workflow["57:27"]["inputs"]["text"] = request.prompt
+    workflow["238:227"]["inputs"]["text"] = request.prompt
 
     client_id = str(uuid.uuid4())
 
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=300.0) as client:
         queue_response = await client.post(
             f"{COMFY_BASE_URL}/prompt",
             json={
@@ -70,7 +73,7 @@ async def fast_test_image(request: ImageRequest) -> ImageTestResponse:
         queue_data = queue_response.json()
         prompt_id = queue_data["prompt_id"]
 
-        for _ in range(180):
+        for _ in range(300):
             history_response = await client.get(
                 f"{COMFY_BASE_URL}/history/{prompt_id}"
             )
