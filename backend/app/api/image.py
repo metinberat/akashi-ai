@@ -5,7 +5,7 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
 
@@ -17,6 +17,9 @@ WORKFLOW_PATH = (
 )
 QWEN_WORKFLOW_PATH = (
     Path(__file__).resolve().parents[2] / "workflows" / "qwen_quality_api.json"
+)
+EDIT_WORKFLOW_PATH = (
+    Path(__file__).resolve().parents[2] / "workflows" / "qwen_edit_api.json"
 )
 
 class ImageRequest(BaseModel):
@@ -99,4 +102,94 @@ async def quality_test_image(request: ImageRequest) -> ImageTestResponse:
     raise HTTPException(
         status_code=504,
         detail="Timed out while waiting for ComfyUI image generation.",
+    )
+
+
+@router.post("/edit", response_model=ImageTestResponse)
+async def edit_image(
+    prompt: str = Form(...),
+    image: UploadFile = File(...),
+) -> ImageTestResponse:
+    if not EDIT_WORKFLOW_PATH.exists():
+        raise HTTPException(
+            status_code=500,
+            detail=f"Workflow file not found: {EDIT_WORKFLOW_PATH}",
+        )
+
+    with EDIT_WORKFLOW_PATH.open("r", encoding="utf-8") as f:
+        workflow = json.load(f)
+
+    image_bytes = await image.read()
+
+    suffix = Path(image.filename or "image.png").suffix or ".png"
+    comfy_filename = f"akashi_edit_{uuid.uuid4().hex}{suffix}"
+
+    async with httpx.AsyncClient(timeout=300.0) as client:
+        upload_response = await client.post(
+            f"{COMFY_BASE_URL}/upload/image",
+            files={
+                "image": (
+                    comfy_filename,
+                    image_bytes,
+                    image.content_type or "application/octet-stream",
+                )
+            },
+            data={
+                "type": "input",
+                "overwrite": "true",
+            },
+        )
+        upload_response.raise_for_status()
+        upload_data = upload_response.json()
+
+        uploaded_name = upload_data["name"]
+        uploaded_subfolder = upload_data.get("subfolder", "")
+
+        if uploaded_subfolder:
+            workflow_image_name = f"{uploaded_subfolder}/{uploaded_name}"
+        else:
+            workflow_image_name = uploaded_name
+
+        workflow["41"]["inputs"]["image"] = workflow_image_name
+        workflow["170:151"]["inputs"]["prompt"] = prompt
+
+        client_id = str(uuid.uuid4())
+
+        queue_response = await client.post(
+            f"{COMFY_BASE_URL}/prompt",
+            json={
+                "prompt": workflow,
+                "client_id": client_id,
+            },
+        )
+        queue_response.raise_for_status()
+
+        prompt_id = queue_response.json()["prompt_id"]
+
+        for _ in range(300):
+            history_response = await client.get(
+                f"{COMFY_BASE_URL}/history/{prompt_id}"
+            )
+            history_response.raise_for_status()
+            history_data = history_response.json()
+
+            if prompt_id in history_data:
+                image_urls = extract_image_urls(history_data[prompt_id])
+
+                if not image_urls:
+                    raise HTTPException(
+                        status_code=502,
+                        detail="Edit completed but no image was returned.",
+                    )
+
+                return ImageTestResponse(
+                    prompt_id=prompt_id,
+                    images=image_urls,
+                )
+
+            await asyncio.sleep(1)
+
+    raise HTTPException(
+        status_code=504,
+        detail="Timed out while waiting for ComfyUI image edit.",
     )
