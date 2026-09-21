@@ -1,6 +1,8 @@
 from typing import Sequence
 
 from app.core.intent import Intent
+from typing import Optional
+from app.providers.images import decode_image
 from app.memory.base import MemoryMessage
 from app.providers.base import AIProvider
 
@@ -32,6 +34,7 @@ class GeminiProvider(AIProvider):
         system_prompt: str,
         history: Sequence[MemoryMessage],
         intent: Intent,
+        images: Optional[Sequence[str]] = None,
     ) -> str:
         transcript = "\n".join(
             f"{item['role'].title()}: {item['content']}"
@@ -50,18 +53,22 @@ class GeminiProvider(AIProvider):
         prompt_parts.append(f"User message:\n{message}")
 
         prompt = "\n\n".join(prompt_parts)
+        contents = [prompt]
+        for image in images or []:
+            mime, data = decode_image(image)
+            contents.append(self._types.Part.from_bytes(data=data, mime_type=mime))
 
         try:
             response = await self._client.aio.models.generate_content(
                 model=self._model_name,
-                contents=prompt,
+                contents=contents,
                 config=self._types.GenerateContentConfig(
                     system_instruction=system_prompt,
                 ),
             )
         except Exception as exc:
             raise RuntimeError(
-                f"Gemini request failed: {exc}"
+                "Gemini request failed. Check server-side provider configuration."
             ) from exc
 
         text = getattr(response, "text", None)
@@ -70,3 +77,6 @@ class GeminiProvider(AIProvider):
             raise RuntimeError("Gemini returned an empty response.")
 
         return str(text).strip()
+
+    async def generate_with_images(self, message, system_prompt, history, intent, images) -> str:
+        return await self.generate(message, system_prompt, history, intent, images)

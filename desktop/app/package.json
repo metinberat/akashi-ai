@@ -1,0 +1,67 @@
+{
+  "name": "akashi-absolute-desktop",
+  "version": "0.4.0",
+  "private": true,
+  "description": "AKASHI ABSOLUTE Windows desktop shell",
+  "author": "AKASHI AI",
+  "main": "main.cjs",
+  "scripts": {
+    "sync:web": "node scripts/sync-web.cjs",
+    "test:security": "node --test tests/security.test.cjs tests/runtime-supervisor.test.cjs",
+    "test:runtime": "node tests/runtime-integration.cjs",
+    "test:packaged-runtime": "node tests/packaged-runtime-smoke.cjs",
+    "start": "npm run sync:web && electron .",
+    "pack:win": "npm run sync:web && electron-builder --win --dir",
+    "dist:win": "npm run sync:web && electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "44.4.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.akashiai.desktop",
+    "productName": "AKASHİ ABSOLUTE",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "runtime-supervisor.cjs",
+      "security.cjs",
+      "preload.cjs",
+      "package.json",
+      "web/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "voice",
+        "to": "voice"
+      },
+      {
+        "from": "../agent/akashi_agent",
+        "to": "agent/akashi_agent",
+        "filter": ["**/*", "!**/__pycache__/**", "!**/*.pyc"]
+      },
+      {
+        "from": "../../backend/app",
+        "to": "core/app",
+        "filter": ["**/*", "!**/__pycache__/**", "!**/*.pyc"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

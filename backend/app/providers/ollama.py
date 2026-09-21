@@ -4,6 +4,7 @@ from typing import Sequence
 from urllib import error, request
 
 from app.core.intent import Intent
+from typing import Optional
 from app.memory.base import MemoryMessage
 from app.providers.base import AIProvider
 
@@ -44,24 +45,15 @@ class OllamaProvider(AIProvider):
         system_prompt: str,
         history: Sequence[MemoryMessage],
         intent: Intent,
+        images: Optional[Sequence[str]] = None,
     ) -> str:
         messages = [
             {
                 "role": "system",
                 "content": (
                     f"{system_prompt}\n\n"
-                    "Runtime facts:\n"
-                    "- Host application: Akashi AI / ABSOLUTE Engine\n"
-                    "- AI provider: Ollama\n"
-                    f"- Active model: {self._model_name}\n"
-                    "- Execution location: the user's own computer\n"
-                    "- Internet/API dependency: none for this response\n\n"
-                    "ABSOLUTE Engine is the host application, not the AI "
-                    "provider or model. When asked how you are running, "
-                    "state that you run locally through Ollama using the "
-                    f"{self._model_name} model.\n"
                     f"Detected intent: {intent}\n"
-                    "Always answer in the user's language."
+                    "The latest user message alone determines the response language."
                 ),
             }
         ]
@@ -91,10 +83,12 @@ class OllamaProvider(AIProvider):
             "stream": False,
             "keep_alive": "15m",
             "options": {
-                "temperature": 0.7,
+                "temperature": 0.2,
             },
         }
 
+        if images:
+            messages[-1]["images"] = [value.partition(",")[2] for value in images]
         body = json.dumps(payload).encode("utf-8")
 
         api_request = request.Request(
@@ -111,9 +105,8 @@ class OllamaProvider(AIProvider):
             ) as response:
                 result = json.loads(response.read().decode("utf-8"))
         except error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
             raise RuntimeError(
-                f"Ollama returned HTTP {exc.code}: {detail}"
+                f"Model provider returned HTTP {exc.code}."
             ) from exc
         except error.URLError as exc:
             raise RuntimeError(
@@ -130,3 +123,6 @@ class OllamaProvider(AIProvider):
             raise RuntimeError("Ollama returned an empty response.")
 
         return text
+
+    async def generate_with_images(self, message, system_prompt, history, intent, images) -> str:
+        return await asyncio.to_thread(self._generate_sync, message, system_prompt, history, intent, images)

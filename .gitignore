@@ -14,10 +14,32 @@ __pycache__/
 backend/.env
 
 # Local/private data
+backend/data/memory.json
 backend/data/private/
+backend/data/uploads/
+backend/data/long_term_memory.json
+backend/data/tasks.json
+backend/data/file_index.json
+backend/data/devices.json
 *.db
+
+# Desktop generated output and local credentials
+desktop/app/node_modules/
+desktop/app/web/
+desktop/app/dist/
+desktop/agent/.env
+desktop/agent/.venv/
+desktop/agent/data/
 
 # Editor / OS
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local temp / secrets
+.tmp-absolute/
+**/venv/
+**/.venv/
+.env
+backend/.env
+backend/data/memory.json

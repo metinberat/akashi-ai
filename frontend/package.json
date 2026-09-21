@@ -2,24 +2,44 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3100",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "serve out -l 3100",
+    "lint": "eslint",
+    "test:api": "node --experimental-transform-types --test tests/*.test.mjs",
+    "test:e2e": "playwright test",
+    "mobile:sync": "npm run build && cap sync",
+    "android:sync": "npm run build && cap sync android",
+    "android:open": "cap open android",
+    "ios:sync": "npm run build && cap sync ios",
+    "ios:open": "cap open ios"
   },
   "dependencies": {
-    "next": "16.3.0",
+    "@aparajita/capacitor-secure-storage": "^8.0.0",
+    "@capacitor-community/text-to-speech": "^8.0.2",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "@capgo/capacitor-speech-recognition": "^8.3.0",
+    "next": "^16.3.5",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
+  "overrides": { "xcode": { "uuid": "11.1.1" } },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
+    "serve": "^14.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

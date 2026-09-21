@@ -17,6 +17,13 @@ venv/
 
 # Runtime data
 data/*.tmp
+data/memory.json
+data/uploads/
+data/long_term_memory.json
+data/tasks.json
+data/file_index.json
+data/devices.json
+data/private/
 
 # Editors and operating systems
 .vscode/

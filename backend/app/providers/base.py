@@ -10,6 +10,12 @@ class AIProvider(ABC):
 
     name: str
 
+    async def generate_with_images(
+        self, message: str, system_prompt: str, history: Sequence[MemoryMessage],
+        intent: Intent, images: Sequence[str],
+    ) -> str:
+        raise ValueError("This provider does not accept images.")
+
     @abstractmethod
     async def generate(
         self,
