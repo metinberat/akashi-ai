@@ -1,0 +1,1129 @@
+{
+ "events": [
+  {
+   "at": "2026-01-01T00:00:02+00:00",
+   "category": "scene",
+   "command": {
+    "object": {
+     "animation": {
+      "clip": null,
+      "playing": false,
+      "speed": 1.0
+     },
+     "asset": {
+      "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+      "bytes": 2200,
+      "clips": [
+       {
+        "duration": 1.0,
+        "index": 0,
+        "name": "Calibration Sway"
+       }
+      ],
+      "form": null,
+      "form_hud_nodes": 0,
+      "format": "glb",
+      "inspector": "spatial-glb-1",
+      "joints": 3,
+      "label": "Calibration block 1.70 m (synthetic)",
+      "normalization": {
+       "flags": [],
+       "native_size": [
+        0.5,
+        1.7,
+        0.3
+       ],
+       "offset": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "pivot": "ground_center",
+       "scale": 1.0,
+       "scope": "Display normalisation only; the source file is never modified.",
+       "size": [
+        0.5,
+        1.7,
+        0.3
+       ],
+       "up_axis": "+Y (glTF)"
+      },
+      "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+      "skinned": true,
+      "source": "fixture",
+      "triangles": 12
+     },
+     "display": {
+      "bounds": false,
+      "form_hud": false,
+      "skeleton": false
+     },
+     "id": "obj-000000000001",
+     "label": "Calibration block 1.70 m (synthetic)",
+     "transform": {
+      "position": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "rotation": [
+       0.0,
+       0.0,
+       0.0,
+       1.0
+      ],
+      "scale": 1.0
+     },
+     "visible": true
+    },
+    "type": "object.add"
+   },
+   "digest_after": "sha256:ff8dc6f4890adc3c4d7f48730d2f7ba6cc8b034fb725b2636c6c7b1b4ccc97de",
+   "digest_before": "sha256:4bb76fdbfe9ac1b7f19bb945a18356cf9b9c1522c2b072cd9b15bf4e03037259",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:464f42ce993cb94bd9747c6cf1f5cd631d2ae9ac6fd2bf702400af2214a52900",
+   "id": "event-0001",
+   "kind": "command",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": {
+      "animation": {
+       "clip": null,
+       "playing": false,
+       "speed": 1.0
+      },
+      "asset": {
+       "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+       "bytes": 2200,
+       "clips": [
+        {
+         "duration": 1.0,
+         "index": 0,
+         "name": "Calibration Sway"
+        }
+       ],
+       "form": null,
+       "form_hud_nodes": 0,
+       "format": "glb",
+       "inspector": "spatial-glb-1",
+       "joints": 3,
+       "label": "Calibration block 1.70 m (synthetic)",
+       "normalization": {
+        "flags": [],
+        "native_size": [
+         0.5,
+         1.7,
+         0.3
+        ],
+        "offset": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "pivot": "ground_center",
+        "scale": 1.0,
+        "scope": "Display normalisation only; the source file is never modified.",
+        "size": [
+         0.5,
+         1.7,
+         0.3
+        ],
+        "up_axis": "+Y (glTF)"
+       },
+       "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+       "skinned": true,
+       "source": "fixture",
+       "triangles": 12
+      },
+      "display": {
+       "bounds": false,
+       "form_hud": false,
+       "skeleton": false
+      },
+      "id": "obj-000000000001",
+      "label": "Calibration block 1.70 m (synthetic)",
+      "transform": {
+       "position": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+       ],
+       "scale": 1.0
+      },
+      "visible": true
+     },
+     "op": "add",
+     "path": [
+      "objects",
+      "obj-000000000001"
+     ]
+    },
+    {
+     "after": [
+      "obj-000000000001"
+     ],
+     "before": [],
+     "op": "replace",
+     "path": [
+      "order"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:68c2fcd604e64a6dc294256edc6ed115c4ad00041aefbad936cde572ac2678bf",
+   "redoes": null,
+   "request": {
+    "fixture": "calibration",
+    "type": "scene.add_asset"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 1,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Added Calibration block 1.70 m (synthetic)",
+   "targets": [
+    "obj-000000000001"
+   ],
+   "undoable": true,
+   "undoes": null
+  },
+  {
+   "at": "2026-01-01T00:00:03+00:00",
+   "category": "selection",
+   "command": {
+    "object_ids": [
+     "obj-000000000001"
+    ],
+    "type": "selection.set"
+   },
+   "digest_after": "sha256:00cb798a700cfc1b2481c21c3d31e90ac27ba3aab0bae602c0e9ee5b21706d38",
+   "digest_before": "sha256:ff8dc6f4890adc3c4d7f48730d2f7ba6cc8b034fb725b2636c6c7b1b4ccc97de",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:0fa6686af9cb58e259f4732c4160f12127c52d2c3bfc6bdd7e76f8f600f7c000",
+   "id": "event-0002",
+   "kind": "command",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": [
+      "obj-000000000001"
+     ],
+     "before": [],
+     "op": "replace",
+     "path": [
+      "selection"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:464f42ce993cb94bd9747c6cf1f5cd631d2ae9ac6fd2bf702400af2214a52900",
+   "redoes": null,
+   "request": {
+    "fixture": "calibration",
+    "type": "scene.add_asset"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 2,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Selected Calibration block 1.70 m (synthetic)",
+   "targets": [
+    "obj-000000000001"
+   ],
+   "undoable": false,
+   "undoes": null
+  },
+  {
+   "at": "2026-01-01T00:00:04+00:00",
+   "category": "scene",
+   "command": {
+    "object": {
+     "animation": {
+      "clip": null,
+      "playing": false,
+      "speed": 1.0
+     },
+     "asset": {
+      "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+      "bytes": 2200,
+      "clips": [
+       {
+        "duration": 1.0,
+        "index": 0,
+        "name": "Calibration Sway"
+       }
+      ],
+      "form": null,
+      "form_hud_nodes": 0,
+      "format": "glb",
+      "inspector": "spatial-glb-1",
+      "joints": 3,
+      "label": "Calibration block 1.70 m (synthetic)",
+      "normalization": {
+       "flags": [],
+       "native_size": [
+        0.5,
+        1.7,
+        0.3
+       ],
+       "offset": [
+        0.0,
+        0.0,
+        0.0
+       ],
+       "pivot": "ground_center",
+       "scale": 1.0,
+       "scope": "Display normalisation only; the source file is never modified.",
+       "size": [
+        0.5,
+        1.7,
+        0.3
+       ],
+       "up_axis": "+Y (glTF)"
+      },
+      "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+      "skinned": true,
+      "source": "fixture",
+      "triangles": 12
+     },
+     "display": {
+      "bounds": false,
+      "form_hud": false,
+      "skeleton": false
+     },
+     "id": "obj-000000000002",
+     "label": "Second",
+     "transform": {
+      "position": [
+       0.8,
+       0.0,
+       0.0
+      ],
+      "rotation": [
+       0.0,
+       0.0,
+       0.0,
+       1.0
+      ],
+      "scale": 1.0
+     },
+     "visible": true
+    },
+    "type": "object.add"
+   },
+   "digest_after": "sha256:4d602a2dc47f036212bd4078bb7700c704a470478d25fec87a64d21562339178",
+   "digest_before": "sha256:00cb798a700cfc1b2481c21c3d31e90ac27ba3aab0bae602c0e9ee5b21706d38",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:11cc1a3201c642c05519c15e3b28f451904675ff5e9f2046ab5fe35d1c3e811c",
+   "id": "event-0003",
+   "kind": "command",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": {
+      "animation": {
+       "clip": null,
+       "playing": false,
+       "speed": 1.0
+      },
+      "asset": {
+       "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+       "bytes": 2200,
+       "clips": [
+        {
+         "duration": 1.0,
+         "index": 0,
+         "name": "Calibration Sway"
+        }
+       ],
+       "form": null,
+       "form_hud_nodes": 0,
+       "format": "glb",
+       "inspector": "spatial-glb-1",
+       "joints": 3,
+       "label": "Calibration block 1.70 m (synthetic)",
+       "normalization": {
+        "flags": [],
+        "native_size": [
+         0.5,
+         1.7,
+         0.3
+        ],
+        "offset": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "pivot": "ground_center",
+        "scale": 1.0,
+        "scope": "Display normalisation only; the source file is never modified.",
+        "size": [
+         0.5,
+         1.7,
+         0.3
+        ],
+        "up_axis": "+Y (glTF)"
+       },
+       "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+       "skinned": true,
+       "source": "fixture",
+       "triangles": 12
+      },
+      "display": {
+       "bounds": false,
+       "form_hud": false,
+       "skeleton": false
+      },
+      "id": "obj-000000000002",
+      "label": "Second",
+      "transform": {
+       "position": [
+        0.8,
+        0.0,
+        0.0
+       ],
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+       ],
+       "scale": 1.0
+      },
+      "visible": true
+     },
+     "op": "add",
+     "path": [
+      "objects",
+      "obj-000000000002"
+     ]
+    },
+    {
+     "after": [
+      "obj-000000000001",
+      "obj-000000000002"
+     ],
+     "before": [
+      "obj-000000000001"
+     ],
+     "op": "replace",
+     "path": [
+      "order"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:0fa6686af9cb58e259f4732c4160f12127c52d2c3bfc6bdd7e76f8f600f7c000",
+   "redoes": null,
+   "request": {
+    "fixture": "calibration",
+    "label": "Second",
+    "type": "scene.add_asset"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 3,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Added Second",
+   "targets": [
+    "obj-000000000002"
+   ],
+   "undoable": true,
+   "undoes": null
+  },
+  {
+   "at": "2026-01-01T00:00:05+00:00",
+   "category": "selection",
+   "command": {
+    "object_ids": [
+     "obj-000000000002"
+    ],
+    "type": "selection.set"
+   },
+   "digest_after": "sha256:932024a61d24c6b61a0845e326699c7635acf72c5c5c68c9f87e93fefdda9279",
+   "digest_before": "sha256:4d602a2dc47f036212bd4078bb7700c704a470478d25fec87a64d21562339178",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:f3cb2fe81631fbdd4edbaca321c047b990d5c040ce5e2019b5f053a23ab3bad3",
+   "id": "event-0004",
+   "kind": "command",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": [
+      "obj-000000000002"
+     ],
+     "before": [
+      "obj-000000000001"
+     ],
+     "op": "replace",
+     "path": [
+      "selection"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:11cc1a3201c642c05519c15e3b28f451904675ff5e9f2046ab5fe35d1c3e811c",
+   "redoes": null,
+   "request": {
+    "fixture": "calibration",
+    "label": "Second",
+    "type": "scene.add_asset"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 4,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Selected Second",
+   "targets": [
+    "obj-000000000002"
+   ],
+   "undoable": false,
+   "undoes": null
+  },
+  {
+   "at": "2026-01-01T00:00:06+00:00",
+   "category": "transform",
+   "command": {
+    "object_id": "obj-000000000001",
+    "transform": {
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation": [
+      0.0,
+      0.707107,
+      0.0,
+      0.707107
+     ],
+     "scale": 1.0
+    },
+    "type": "object.transform"
+   },
+   "digest_after": "sha256:0ee269b4b833743049e7308d66644260dc009d291f2f0fb9fb9e6634b94ac8d6",
+   "digest_before": "sha256:932024a61d24c6b61a0845e326699c7635acf72c5c5c68c9f87e93fefdda9279",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:cb8159ef91293d40bf53b48561b7cf73378cb2cd4e81380c2ce1c4a42d04db60",
+   "id": "event-0005",
+   "kind": "command",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": [
+      0.0,
+      0.707107,
+      0.0,
+      0.707107
+     ],
+     "before": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "op": "replace",
+     "path": [
+      "objects",
+      "obj-000000000001",
+      "transform",
+      "rotation"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:f3cb2fe81631fbdd4edbaca321c047b990d5c040ce5e2019b5f053a23ab3bad3",
+   "redoes": null,
+   "request": {
+    "axis": "y",
+    "degrees": 90.0,
+    "mode": "rotate",
+    "target": {
+     "ref": "leftmost"
+    },
+    "type": "object.transform"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 5,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Transformed Calibration block 1.70 m (synthetic)",
+   "targets": [
+    "obj-000000000001"
+   ],
+   "undoable": true,
+   "undoes": null
+  },
+  {
+   "at": "2026-01-01T00:00:07+00:00",
+   "category": "transform",
+   "command": {
+    "object_id": "obj-000000000002",
+    "transform": {
+     "position": [
+      0.8,
+      0.0,
+      0.0
+     ],
+     "rotation": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "scale": 1.5
+    },
+    "type": "object.transform"
+   },
+   "digest_after": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
+   "digest_before": "sha256:0ee269b4b833743049e7308d66644260dc009d291f2f0fb9fb9e6634b94ac8d6",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:945a8a1be6c49ea54cd5b2cf2815a4f742516e05fa9a595da6fd5a095e08bdcc",
+   "id": "event-0006",
+   "kind": "command",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": 1.5,
+     "before": 1.0,
+     "op": "replace",
+     "path": [
+      "objects",
+      "obj-000000000002",
+      "transform",
+      "scale"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:cb8159ef91293d40bf53b48561b7cf73378cb2cd4e81380c2ce1c4a42d04db60",
+   "redoes": null,
+   "request": {
+    "axis": "y",
+    "factor": 1.5,
+    "mode": "scale",
+    "target": {
+     "ref": "selected"
+    },
+    "type": "object.transform"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 6,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Transformed Second",
+   "targets": [
+    "obj-000000000002"
+   ],
+   "undoable": true,
+   "undoes": null
+  },
+  {
+   "at": "2026-01-01T00:00:08+00:00",
+   "category": "display",
+   "command": {
+    "object_id": "obj-000000000002",
+    "skeleton": true,
+    "type": "object.display"
+   },
+   "digest_after": "sha256:15435f263ffa88054597693606cdeb0a65a598809d8e28491a58016973693694",
+   "digest_before": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:fdf670cd397ecad63ce4bddf0406c34018bf153bfb456d663490b6b10c233e6d",
+   "id": "event-0007",
+   "kind": "command",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": true,
+     "before": false,
+     "op": "replace",
+     "path": [
+      "objects",
+      "obj-000000000002",
+      "display",
+      "skeleton"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:945a8a1be6c49ea54cd5b2cf2815a4f742516e05fa9a595da6fd5a095e08bdcc",
+   "redoes": null,
+   "request": {
+    "skeleton": true,
+    "target": {
+     "ref": "selected"
+    },
+    "type": "object.display"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 7,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Display changed for Second",
+   "targets": [
+    "obj-000000000002"
+   ],
+   "undoable": true,
+   "undoes": null
+  },
+  {
+   "at": "2026-01-01T00:00:09+00:00",
+   "category": "display",
+   "command": {
+    "type": "history.undo"
+   },
+   "digest_after": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
+   "digest_before": "sha256:15435f263ffa88054597693606cdeb0a65a598809d8e28491a58016973693694",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:36f7a651d47256fb4405eb48b3b00c237d597fc7ecc7c92358807be9dd9f9709",
+   "id": "event-0008",
+   "kind": "undo",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": false,
+     "before": true,
+     "op": "replace",
+     "path": [
+      "objects",
+      "obj-000000000002",
+      "display",
+      "skeleton"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:fdf670cd397ecad63ce4bddf0406c34018bf153bfb456d663490b6b10c233e6d",
+   "redoes": null,
+   "request": {
+    "type": "history.undo"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 8,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Undo: Display changed for Second",
+   "targets": [
+    "obj-000000000002"
+   ],
+   "undoable": false,
+   "undoes": 7
+  },
+  {
+   "at": "2026-01-01T00:00:10+00:00",
+   "category": "transform",
+   "command": {
+    "type": "history.undo"
+   },
+   "digest_after": "sha256:0ee269b4b833743049e7308d66644260dc009d291f2f0fb9fb9e6634b94ac8d6",
+   "digest_before": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:1d2fc8ffb4e8712771f7358d5a59bb1727bb4e0c3be363b99932892e6f739374",
+   "id": "event-0009",
+   "kind": "undo",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": 1.0,
+     "before": 1.5,
+     "op": "replace",
+     "path": [
+      "objects",
+      "obj-000000000002",
+      "transform",
+      "scale"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:36f7a651d47256fb4405eb48b3b00c237d597fc7ecc7c92358807be9dd9f9709",
+   "redoes": null,
+   "request": {
+    "type": "history.undo"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 9,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Undo: Transformed Second",
+   "targets": [
+    "obj-000000000002"
+   ],
+   "undoable": false,
+   "undoes": 6
+  },
+  {
+   "at": "2026-01-01T00:00:11+00:00",
+   "category": "transform",
+   "command": {
+    "type": "history.redo"
+   },
+   "digest_after": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
+   "digest_before": "sha256:0ee269b4b833743049e7308d66644260dc009d291f2f0fb9fb9e6634b94ac8d6",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:e0a6c91d7a647642776afcba0f615a138e868fa64d11dc716860bdcbceb84c56",
+   "id": "event-0010",
+   "kind": "redo",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": 1.5,
+     "before": 1.0,
+     "op": "replace",
+     "path": [
+      "objects",
+      "obj-000000000002",
+      "transform",
+      "scale"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:1d2fc8ffb4e8712771f7358d5a59bb1727bb4e0c3be363b99932892e6f739374",
+   "redoes": 6,
+   "request": {
+    "type": "history.redo"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 10,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Redo: Transformed Second",
+   "targets": [
+    "obj-000000000002"
+   ],
+   "undoable": false,
+   "undoes": null
+  },
+  {
+   "at": "2026-01-01T00:00:12+00:00",
+   "category": "animation",
+   "command": {
+    "clip": "Calibration Sway",
+    "object_id": "obj-000000000001",
+    "playing": true,
+    "speed": 1.0,
+    "type": "object.animation"
+   },
+   "digest_after": "sha256:c32d9a883eb015f6942df9591b4ffa6a57f82bc8a89af30b7d52c0398df88957",
+   "digest_before": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:42937a3c8797f2ebea5964c8e9cee40e4749d0db0a69836ec173e3ec5817d8aa",
+   "id": "event-0011",
+   "kind": "command",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": "Calibration Sway",
+     "before": null,
+     "op": "replace",
+     "path": [
+      "objects",
+      "obj-000000000001",
+      "animation",
+      "clip"
+     ]
+    },
+    {
+     "after": true,
+     "before": false,
+     "op": "replace",
+     "path": [
+      "objects",
+      "obj-000000000001",
+      "animation",
+      "playing"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:e0a6c91d7a647642776afcba0f615a138e868fa64d11dc716860bdcbceb84c56",
+   "redoes": null,
+   "request": {
+    "action": "play",
+    "clip": "sway",
+    "target": {
+     "ref": "leftmost"
+    },
+    "type": "animation.control"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 11,
+   "stream": "spatial-00000000000000ff",
+   "summary": "Playing Calibration Sway on Calibration block 1.70 m (synthetic)",
+   "targets": [
+    "obj-000000000001"
+   ],
+   "undoable": true,
+   "undoes": null
+  },
+  {
+   "at": "2026-01-01T00:00:13+00:00",
+   "category": "view",
+   "command": {
+    "hud_visible": false,
+    "type": "view.set"
+   },
+   "digest_after": "sha256:18da567ade5729e043c4acdb4ef2dcbd4cc0a329bee92ddc34b597dad1f5c20b",
+   "digest_before": "sha256:c32d9a883eb015f6942df9591b4ffa6a57f82bc8a89af30b7d52c0398df88957",
+   "domain": "akashi.spatial",
+   "domain_version": "spatial-scene-1",
+   "hash": "sha256:b3198b2ddcdd7a1433e30e17d41f12ec67b859e9d32a11fa785784b1a483313c",
+   "id": "event-0012",
+   "kind": "command",
+   "origin": {
+    "kind": "ui",
+    "provider": "contract-fixture"
+   },
+   "patches": [
+    {
+     "after": false,
+     "before": true,
+     "op": "replace",
+     "path": [
+      "view",
+      "hud_visible"
+     ]
+    }
+   ],
+   "prev_hash": "sha256:42937a3c8797f2ebea5964c8e9cee40e4749d0db0a69836ec173e3ec5817d8aa",
+   "redoes": null,
+   "request": {
+    "hud_visible": false,
+    "type": "view.set"
+   },
+   "schema": "akashi.action-event/1",
+   "seq": 12,
+   "stream": "spatial-00000000000000ff",
+   "summary": "View: hud_visible=False",
+   "targets": [],
+   "undoable": true,
+   "undoes": null
+  }
+ ],
+ "final_digest": "sha256:18da567ade5729e043c4acdb4ef2dcbd4cc0a329bee92ddc34b597dad1f5c20b",
+ "final_state": {
+  "objects": {
+   "obj-000000000001": {
+    "animation": {
+     "clip": "Calibration Sway",
+     "playing": true,
+     "speed": 1.0
+    },
+    "asset": {
+     "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+     "bytes": 2200,
+     "clips": [
+      {
+       "duration": 1.0,
+       "index": 0,
+       "name": "Calibration Sway"
+      }
+     ],
+     "form": null,
+     "form_hud_nodes": 0,
+     "format": "glb",
+     "inspector": "spatial-glb-1",
+     "joints": 3,
+     "label": "Calibration block 1.70 m (synthetic)",
+     "normalization": {
+      "flags": [],
+      "native_size": [
+       0.5,
+       1.7,
+       0.3
+      ],
+      "offset": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "pivot": "ground_center",
+      "scale": 1.0,
+      "scope": "Display normalisation only; the source file is never modified.",
+      "size": [
+       0.5,
+       1.7,
+       0.3
+      ],
+      "up_axis": "+Y (glTF)"
+     },
+     "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+     "skinned": true,
+     "source": "fixture",
+     "triangles": 12
+    },
+    "display": {
+     "bounds": false,
+     "form_hud": false,
+     "skeleton": false
+    },
+    "id": "obj-000000000001",
+    "label": "Calibration block 1.70 m (synthetic)",
+    "transform": {
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "rotation": [
+      0.0,
+      0.707107,
+      0.0,
+      0.707107
+     ],
+     "scale": 1.0
+    },
+    "visible": true
+   },
+   "obj-000000000002": {
+    "animation": {
+     "clip": null,
+     "playing": false,
+     "speed": 1.0
+    },
+    "asset": {
+     "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+     "bytes": 2200,
+     "clips": [
+      {
+       "duration": 1.0,
+       "index": 0,
+       "name": "Calibration Sway"
+      }
+     ],
+     "form": null,
+     "form_hud_nodes": 0,
+     "format": "glb",
+     "inspector": "spatial-glb-1",
+     "joints": 3,
+     "label": "Calibration block 1.70 m (synthetic)",
+     "normalization": {
+      "flags": [],
+      "native_size": [
+       0.5,
+       1.7,
+       0.3
+      ],
+      "offset": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "pivot": "ground_center",
+      "scale": 1.0,
+      "scope": "Display normalisation only; the source file is never modified.",
+      "size": [
+       0.5,
+       1.7,
+       0.3
+      ],
+      "up_axis": "+Y (glTF)"
+     },
+     "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+     "skinned": true,
+     "source": "fixture",
+     "triangles": 12
+    },
+    "display": {
+     "bounds": false,
+     "form_hud": false,
+     "skeleton": false
+    },
+    "id": "obj-000000000002",
+    "label": "Second",
+    "transform": {
+     "position": [
+      0.8,
+      0.0,
+      0.0
+     ],
+     "rotation": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ],
+     "scale": 1.5
+    },
+    "visible": true
+   }
+  },
+  "order": [
+   "obj-000000000001",
+   "obj-000000000002"
+  ],
+  "schema": "akashi.spatial.scene/1",
+  "selection": [
+   "obj-000000000002"
+  ],
+  "view": {
+   "hud_visible": false,
+   "inspector": null,
+   "vfx_visible": true
+  }
+ },
+ "header": {
+  "created_at": "2026-01-01T00:00:01+00:00",
+  "domain": "akashi.spatial",
+  "domain_version": "spatial-scene-1",
+  "initial_digest": "sha256:4bb76fdbfe9ac1b7f19bb945a18356cf9b9c1522c2b072cd9b15bf4e03037259",
+  "initial_state": {
+   "objects": {},
+   "order": [],
+   "schema": "akashi.spatial.scene/1",
+   "selection": [],
+   "view": {
+    "hud_visible": true,
+    "inspector": null,
+    "vfx_visible": true
+   }
+  },
+  "metadata": {},
+  "schema": "akashi.action-stream/1",
+  "stream": "spatial-00000000000000ff"
+ },
+ "initial_state": {
+  "objects": {},
+  "order": [],
+  "schema": "akashi.spatial.scene/1",
+  "selection": [],
+  "view": {
+   "hud_visible": true,
+   "inspector": null,
+   "vfx_visible": true
+  }
+ },
+ "schema": "akashi.spatial.contract-fixture/1"
+}

@@ -35,7 +35,7 @@ function isPrivateHost(hostname: string): boolean {
 }
 
 export class ApiError extends Error {
-  constructor(public readonly kind: ApiErrorKind, message: string, public readonly status?: number) {
+  constructor(public readonly kind: ApiErrorKind, message: string, public readonly status?: number, public readonly payload?: Record<string, unknown>) {
     super(message);
     this.name = "ApiError";
   }
@@ -228,11 +228,13 @@ export async function apiFetch(
     }
     const kind: ApiErrorKind = path.startsWith("/image/") ? "image" : path === "/chat" ? "chat" : "service";
     let detail = "";
+    let payload: Record<string, unknown> | undefined;
     try {
       const body = await response.json();
+      if (body && typeof body === "object") payload = body as Record<string, unknown>;
       if (typeof body.detail === "string") detail = body.detail.slice(0, 350);
     } catch { /* Status remains useful if the proxy did not return JSON. */ }
-    throw new ApiError(kind, `${kind === "image" ? "Görsel servisi" : kind === "chat" ? "Sohbet modeli" : "Servis"} başarısız (${response.status}).${detail ? ` ${detail}` : " Yeniden dene; sunucu günlüklerini kontrol et."}`, response.status);
+    throw new ApiError(kind, `${kind === "image" ? "Görsel servisi" : kind === "chat" ? "Sohbet modeli" : "Servis"} başarısız (${response.status}).${detail ? ` ${detail}` : " Yeniden dene; sunucu günlüklerini kontrol et."}`, response.status, payload);
   }
   return response;
 }

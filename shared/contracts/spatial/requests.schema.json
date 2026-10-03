@@ -1,0 +1,733 @@
+{
+  "$defs": {
+    "AddAsset": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asset Id"
+        },
+        "fixture": {
+          "anyOf": [
+            {
+              "const": "calibration",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fixture"
+        },
+        "form": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FormSelector"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Position"
+        },
+        "type": {
+          "const": "scene.add_asset",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "AddAsset",
+      "type": "object"
+    },
+    "AnimationControl": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "play",
+            "pause",
+            "stop"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "clip": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clip"
+        },
+        "speed": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 10.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Speed"
+        },
+        "target": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "type": {
+          "const": "animation.control",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "target",
+        "action"
+      ],
+      "title": "AnimationControl",
+      "type": "object"
+    },
+    "Display": {
+      "additionalProperties": false,
+      "properties": {
+        "bounds": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bounds"
+        },
+        "form_hud": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Form Hud"
+        },
+        "skeleton": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Skeleton"
+        },
+        "target": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "type": {
+          "const": "object.display",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "target"
+      ],
+      "title": "Display",
+      "type": "object"
+    },
+    "FormSelector": {
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Project Id"
+        },
+        "version": {
+          "default": "latest",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "title": "FormSelector",
+      "type": "object"
+    },
+    "Inspect": {
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ObjectRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "view.inspect",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "Inspect",
+      "type": "object"
+    },
+    "ObjectRef": {
+      "additionalProperties": false,
+      "description": "Either a concrete object id or a semantic reference resolved against the scene.",
+      "properties": {
+        "anchor": {
+          "anyOf": [
+            {
+              "enum": [
+                "left_hand",
+                "right_hand"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "enum": [
+                "selected",
+                "deictic",
+                "only",
+                "last_touched",
+                "last_moved",
+                "leftmost",
+                "rightmost",
+                "largest",
+                "smallest",
+                "form",
+                "latest_version",
+                "nearest_anchor",
+                "label"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref"
+        }
+      },
+      "title": "ObjectRef",
+      "type": "object"
+    },
+    "Redo": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "history.redo",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "Redo",
+      "type": "object"
+    },
+    "Remove": {
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "type": {
+          "const": "scene.remove",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "target"
+      ],
+      "title": "Remove",
+      "type": "object"
+    },
+    "Rename": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "type": {
+          "const": "object.rename",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "target",
+        "label"
+      ],
+      "title": "Rename",
+      "type": "object"
+    },
+    "Select": {
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ObjectRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "selection.select",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "Select",
+      "type": "object"
+    },
+    "Transform": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "anyOf": [
+            {
+              "enum": [
+                "left_hand",
+                "right_hand"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor"
+        },
+        "axis": {
+          "default": "y",
+          "enum": [
+            "x",
+            "y",
+            "z"
+          ],
+          "title": "Axis",
+          "type": "string"
+        },
+        "degrees": {
+          "anyOf": [
+            {
+              "maximum": 3600.0,
+              "minimum": -3600.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Degrees"
+        },
+        "delta": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delta"
+        },
+        "factor": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Factor"
+        },
+        "lease_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lease Id"
+        },
+        "mode": {
+          "enum": [
+            "set",
+            "translate",
+            "rotate",
+            "scale",
+            "reset",
+            "center",
+            "to_anchor"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "transform": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TransformValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "object.transform",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "target",
+        "mode"
+      ],
+      "title": "Transform",
+      "type": "object"
+    },
+    "TransformValue": {
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Position",
+          "type": "array"
+        },
+        "rotation": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Rotation",
+          "type": "array"
+        },
+        "scale": {
+          "title": "Scale",
+          "type": "number"
+        }
+      },
+      "required": [
+        "position",
+        "rotation",
+        "scale"
+      ],
+      "title": "TransformValue",
+      "type": "object"
+    },
+    "Undo": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "history.undo",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "Undo",
+      "type": "object"
+    },
+    "Version": {
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "type": {
+          "const": "object.version",
+          "title": "Type",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "target",
+        "version"
+      ],
+      "title": "Version",
+      "type": "object"
+    },
+    "ViewSet": {
+      "additionalProperties": false,
+      "properties": {
+        "hud_visible": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hud Visible"
+        },
+        "type": {
+          "const": "view.set",
+          "title": "Type",
+          "type": "string"
+        },
+        "vfx_visible": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vfx Visible"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "ViewSet",
+      "type": "object"
+    },
+    "Visibility": {
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        "type": {
+          "const": "object.visibility",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "target",
+        "visible"
+      ],
+      "title": "Visibility",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "animation.control": "#/$defs/AnimationControl",
+      "history.redo": "#/$defs/Redo",
+      "history.undo": "#/$defs/Undo",
+      "object.display": "#/$defs/Display",
+      "object.rename": "#/$defs/Rename",
+      "object.transform": "#/$defs/Transform",
+      "object.version": "#/$defs/Version",
+      "object.visibility": "#/$defs/Visibility",
+      "scene.add_asset": "#/$defs/AddAsset",
+      "scene.remove": "#/$defs/Remove",
+      "selection.select": "#/$defs/Select",
+      "view.inspect": "#/$defs/Inspect",
+      "view.set": "#/$defs/ViewSet"
+    },
+    "propertyName": "type"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/AddAsset"
+    },
+    {
+      "$ref": "#/$defs/Remove"
+    },
+    {
+      "$ref": "#/$defs/Select"
+    },
+    {
+      "$ref": "#/$defs/Inspect"
+    },
+    {
+      "$ref": "#/$defs/Transform"
+    },
+    {
+      "$ref": "#/$defs/Visibility"
+    },
+    {
+      "$ref": "#/$defs/Display"
+    },
+    {
+      "$ref": "#/$defs/AnimationControl"
+    },
+    {
+      "$ref": "#/$defs/Version"
+    },
+    {
+      "$ref": "#/$defs/Rename"
+    },
+    {
+      "$ref": "#/$defs/ViewSet"
+    },
+    {
+      "$ref": "#/$defs/Undo"
+    },
+    {
+      "$ref": "#/$defs/Redo"
+    }
+  ]
+}
