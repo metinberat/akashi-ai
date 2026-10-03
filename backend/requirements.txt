@@ -6,5 +6,7 @@ python-dotenv==1.2.3
 google-genai==2.8.0
 httpx==0.28.1
 python-multipart==0.0.32
+# Imported by app.expertise.production (reference/visual analysis) at Core startup.
+Pillow==12.3.0
 typing-extensions==4.16.0
 livekit-agents[silero]~=1.8.3
