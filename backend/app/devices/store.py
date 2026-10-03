@@ -22,12 +22,24 @@ SAFE_ACTIONS = {
     "file_metadata",
     "take_screenshot",
     "capture_camera_frame",
+    "get_desktop_state",
+    "read_text_file",
+    "inspect_git",
+    "browser_status",
+    "browser_tabs",
+    "browser_snapshot",
 }
 CONFIRM_ACTIONS = {
     "launch_application",
     "open_project",
     "reveal_file",
     "run_project_script",
+    "window_control",
+    "computer_input",
+    "file_operation",
+    "browser_start",
+    "browser_action",
+    "blender_operation",
 }
 
 

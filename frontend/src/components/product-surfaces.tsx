@@ -4,6 +4,7 @@
 import { useMemo, useState } from "react";
 
 import { MemoryPanel } from "@/components/absolute-panels";
+import { CallsPanel } from "@/components/calls-panel";
 import { Icon, Presence } from "@/components/identity";
 import type {
   AkashiTask,
@@ -338,6 +339,7 @@ export function MemoryHub(props: MemoryHubProps) {
 }
 
 type MorePanelProps = {
+  config: BackendConfig;
   presentation: ClientPresentation;
   moodPreference: "auto" | ProductMood;
   connected: boolean;
@@ -348,7 +350,7 @@ type MorePanelProps = {
   onSettings: () => void;
 };
 
-export function MorePanel({ presentation, moodPreference, connected, systemHealth, maintenance = [], onMoodPreference, onNavigate, onSettings }: MorePanelProps) {
+export function MorePanel({ config, presentation, moodPreference, connected, systemHealth, maintenance = [], onMoodPreference, onNavigate, onSettings }: MorePanelProps) {
   const destinations: Array<{ view: WorkspaceView; title: string; detail: string; icon: "research" | "files" | "devices" | "tasks" }> = [
     { view: "research", title: "Research", detail: "Dış kanıt ve kaynak sentezi", icon: "research" },
     { view: "files", title: "Files", detail: "Belge bağlamı ve yüklemeler", icon: "files" },
@@ -361,6 +363,7 @@ export function MorePanel({ presentation, moodPreference, connected, systemHealt
     <section className="profile-settings-card"><div><p className="eyebrow">VISUAL STATE</p><h4>Controlled intensity</h4><p>AUTO, işlem yüküne göre CALM / HARDCARRY / BEST OF BEST arasında geçer.</p></div><select aria-label="AKASHI görsel durumu" value={moodPreference} onChange={(event) => onMoodPreference(event.target.value as "auto" | ProductMood)}><option value="auto">AUTO</option><option value="calm">CALM</option><option value="hardcarry">HARDCARRY</option><option value="best">BEST OF BEST</option></select></section>
     <section className="profile-settings-card"><div><p className="eyebrow">CONNECTION</p><h4>{connected ? "Core connected" : "Core offline"}</h4><p>Model ve servis anahtarları istemcide tutulmaz.</p></div><button type="button" onClick={onSettings}>Backend ayarları</button></section>
     <section className="profile-settings-card"><div><p className="eyebrow">MAINTENANCE QUEUE</p><h4>{maintenance.length ? `${maintenance.length} onaylı inceleme` : "Kuyruk boş"}</h4><p>{maintenance[0]?.title || "Miss Minutes üretim kodunu kendiliğinden değiştirmez."}</p></div><span className="state-pill">MANUAL ONLY</span></section>
+    <CallsPanel config={config} connected={connected} />
     {presentation.desktopBody !== "hidden" && <section className="linked-body-card"><div><span className={`status-dot ${systemHealth?.desktop_agent.online ? "online" : "offline"}`} /><p className="eyebrow">DESKTOP BODY</p></div><h4>{systemHealth?.desktop_agent.online ? `${systemHealth.desktop_agent.online} cihaz çevrimiçi` : "Bağlı desktop yok"}</h4><p>{presentation.desktopBody === "primary" ? "Yerel eylemler Devices alanında kullanılabilir." : "Desktop güçleri mobil ana deneyimden ayrı ve ikincil tutulur."}</p></section>}
   </div>;
 }

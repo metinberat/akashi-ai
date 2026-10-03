@@ -104,7 +104,7 @@ declare global {
         onState(callback: (value: { state: "listening" | "speech_started" | "transcribing"; detectedAtMs?: number }) => void): () => void;
         live: {
           available(): Promise<boolean>;
-          start(options?: { language?: "auto" | "tr" | "en" }): Promise<{ started: boolean; alreadyRunning?: boolean }>;
+          start(options?: { language?: "auto" | "tr" | "en"; sessionId?: string }): Promise<{ started: boolean; alreadyRunning?: boolean }>;
           stop(): Promise<boolean>;
           interrupt(): Promise<boolean>;
           sendText(text: string): Promise<boolean>;

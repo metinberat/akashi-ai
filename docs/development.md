@@ -118,7 +118,15 @@ encrypted in the Electron user-data directory.
 
 Desktop FULL VOICE uses the existing local Python 3.11 Whisper installation.
 The default worker command is `py -3.11`; set `AKASHI_VOICE_PYTHON` to an
-absolute Python `.exe` only when the launcher is unavailable. A cached
+absolute Python `.exe` only when the launcher is unavailable. Install the voice
+workers' dependencies into that interpreter, not the backend virtualenv:
+
+```powershell
+py -3.11 -m pip install -r desktop/app/voice/requirements.txt
+```
+
+That file pins `google-genai` to the version the always-on Gemini Live session
+was verified against, which is a different major than the backend's pin. A cached
 `tiny`, `base`, or `small` Whisper checkpoint is required. Microphone audio is
 kept in memory, one recognition worker is allowed at a time, and no wake-word
 or background recording is enabled. During a full voice session, detected

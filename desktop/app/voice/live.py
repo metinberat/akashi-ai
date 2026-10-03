@@ -19,7 +19,10 @@ PROTOCOL (stdin/stdout, both newline-delimited JSON)
     First line on stdin is the handshake:
         {"gemini_api_key": "...", "core_base_url": "http://127.0.0.1:8000",
          "core_token": "...", "voice_name": "Charon", "language": "auto",
-         "identity": "...", "voice_style": "..."}
+         "session_id": "...", "identity": "...", "voice_style": "..."}
+    session_id is optional: when the host supplies the conversation id the user
+    is already typing in, a voice turn that consults Core continues that same
+    conversation instead of opening a private one that nothing else can see.
     Further stdin lines are control commands:
         {"cmd": "interrupt"}   - stop AKASHI mid-sentence, open the mic now
         {"cmd": "text", "text": "..."}   - inject a typed message as a turn
@@ -232,7 +235,8 @@ class AkashiLiveVoice:
         self.language: str = handshake.get("language") or "auto"
         self.identity: str = handshake.get("identity") or "You are AKASHI, a composed and precise AI assistant."
         self.voice_style: str = handshake.get("voice_style") or "Keep voice replies brief and speakable."
-        self.session_id = f"voice-live-{uuid.uuid4().hex[:12]}"
+        requested_session = str(handshake.get("session_id") or "").strip()
+        self.session_id = requested_session or f"voice-live-{uuid.uuid4().hex[:12]}"
 
         self.session = None
         self.audio_in_queue: Optional[asyncio.Queue] = None

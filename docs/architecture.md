@@ -31,6 +31,12 @@ AI orchestration stays in the backend. Mobile and desktop clients select stable
 capabilities and API resources; they do not contain provider credentials or
 provider-specific logic.
 
+The single exception is the desktop always-on voice worker
+(`desktop/app/voice/live.py`), which holds a Gemini key in Windows DPAPI storage
+and streams audio straight to Gemini Live. Anything beyond casual conversation
+is delegated back to Core through `/chat`, so tools, research, memory and
+persona remain backend-owned.
+
 ## Core services
 
 `app/core/absolute.py` is the composition root, not a business-logic God class.

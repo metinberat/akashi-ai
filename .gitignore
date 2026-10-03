@@ -15,6 +15,11 @@ backend/.env
 
 # Local/private data
 backend/data/memory.json
+# Independent FORM product generated dependencies, builds and local tests
+products/form/node_modules/
+products/form/web-dist/
+products/form/dist/
+products/form/.validation/
 backend/data/private/
 backend/data/uploads/
 backend/data/long_term_memory.json

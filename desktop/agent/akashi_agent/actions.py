@@ -13,9 +13,12 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
+from akashi_agent.browser import BrowserAutomationError, ChromiumController
 from akashi_agent.config import AgentSettings
 from akashi_agent.security import PathPolicy
 from akashi_agent.scripts import run_pinned_script
+from akashi_agent.windows import computer_input, control_window, list_windows
+from akashi_agent.character_patch import stage_patch
 
 SAFE_ACTIONS = {
     "get_system_status",
@@ -28,12 +31,24 @@ SAFE_ACTIONS = {
     # natural-language request and the agent never records continuously.
     "take_screenshot",
     "capture_camera_frame",
+    "get_desktop_state",
+    "read_text_file",
+    "inspect_git",
+    "browser_status",
+    "browser_tabs",
+    "browser_snapshot",
 }
 CONFIRM_ACTIONS = {
     "launch_application",
     "open_project",
     "reveal_file",
     "run_project_script",
+    "window_control",
+    "computer_input",
+    "file_operation",
+    "browser_start",
+    "browser_action",
+    "blender_operation",
 }
 
 
@@ -50,6 +65,7 @@ class ActionExecutor:
         self.settings = settings
         self.paths = PathPolicy(settings.allowed_roots)
         self._camera_lock = threading.Lock()
+        self._character_patch_lock = threading.Lock()
         self.apps = self._discover_apps()
         self._handlers: Dict[str, Callable[[Dict[str, Any]], Dict[str, Any]]] = {
             "get_system_status": self._system_status,
@@ -64,6 +80,18 @@ class ActionExecutor:
             "take_screenshot": self._take_screenshot,
             "capture_camera_frame": self._capture_camera_frame,
             "run_project_script": self._run_project_script,
+            "get_desktop_state": self._get_desktop_state,
+            "window_control": self._window_control,
+            "computer_input": self._computer_input,
+            "read_text_file": self._read_text_file,
+            "file_operation": self._file_operation,
+            "inspect_git": self._inspect_git,
+            "browser_status": self._browser_status,
+            "browser_tabs": self._browser_tabs,
+            "browser_snapshot": self._browser_snapshot,
+            "browser_start": self._browser_start,
+            "browser_action": self._browser_action,
+            "blender_operation": self._blender_operation,
         }
 
     @staticmethod
@@ -95,6 +123,16 @@ class ActionExecutor:
                 shutil.which("powershell.exe"),
             ],
             "spotify": [str(os.getenv("APPDATA", "")) + "/Spotify/Spotify.exe"],
+            "discord": [
+                str(path)
+                for path in sorted(local.glob("Discord/app-*/Discord.exe"), reverse=True)
+            ],
+            "notepad": [str(Path(os.getenv("WINDIR", "C:/Windows")) / "System32/notepad.exe")],
+            "explorer": [str(Path(os.getenv("WINDIR", "C:/Windows")) / "explorer.exe")],
+            "blender": [
+                str(path)
+                for path in sorted(program_files.glob("Blender Foundation/Blender */blender.exe"), reverse=True)
+            ],
         }
         discovered = {
             name: path
@@ -117,16 +155,57 @@ class ActionExecutor:
             "application_status": {"application"}, "list_directory": {"path", "limit"},
             "find_file": {"root", "query", "limit"}, "file_metadata": {"path"},
             "launch_application": {"application", "url"}, "open_project": {"path"},
-            "reveal_file": {"path"}, "take_screenshot": set(),
+            "reveal_file": {"path"}, "take_screenshot": {"window_id"},
             "capture_camera_frame": {"device_index"},
             "run_project_script": {"project", "script", "timeout_seconds"},
+            "get_desktop_state": {"limit"},
+            "window_control": {"operation", "window_id", "title", "x", "y", "width", "height"},
+            "computer_input": {"operation", "x", "y", "x2", "y2", "steps", "button", "delta", "horizontal", "text", "keys"},
+            "read_text_file": {"path", "max_chars"},
+            "file_operation": {"operation", "source", "destination", "content", "overwrite"},
+            "inspect_git": {"project", "operation", "revision", "path", "limit"},
+            "browser_status": set(),
+            "browser_tabs": set(),
+            "browser_snapshot": {"tab_id"},
+            "browser_start": {"url"},
+            "browser_action": {"operation", "tab_id", "url", "target", "value", "delta", "accept"},
+            "blender_operation": {"operation", "project", "output", "patch", "timeout_seconds", "chunk", "chunk_index", "chunk_count", "sha256", "offset", "length", "view", "frame"},
         }[name]
         if not isinstance(arguments, dict) or set(arguments) - allowed:
             raise ValueError("Unexpected action arguments.")
         for key, value in arguments.items():
-            if key in {"limit", "timeout_seconds", "device_index"}:
+            if key in {"limit", "timeout_seconds", "device_index", "window_id", "x", "y", "x2", "y2", "width", "height", "steps", "delta", "max_chars", "chunk_index", "chunk_count", "offset", "length", "frame"}:
                 if type(value) is not int:
                     raise ValueError(f"{key} must be an integer.")
+            elif key in {"horizontal", "overwrite"}:
+                if type(value) is not bool:
+                    raise ValueError(f"{key} must be a boolean.")
+            elif key == "target":
+                if not isinstance(value, dict) or set(value) - {"selector", "text", "role", "label", "aria_label", "placeholder", "index"}:
+                    raise ValueError("target must be a bounded semantic locator.")
+                for target_key, target_value in value.items():
+                    if target_key == "index":
+                        if type(target_value) is not int or target_value < 0 or target_value > 239:
+                            raise ValueError("target index must be between 0 and 239.")
+                    elif not isinstance(target_value, str) or len(target_value) > 500:
+                        raise ValueError("target locator values must be bounded strings.")
+            elif key == "accept":
+                if type(value) is not bool:
+                    raise ValueError("accept must be a boolean.")
+            elif key == "keys":
+                if not (
+                    isinstance(value, str)
+                    or isinstance(value, list)
+                    and len(value) <= 5
+                    and all(isinstance(item, str) and len(item) <= 32 for item in value)
+                ):
+                    raise ValueError("keys must be a bounded string or list.")
+            elif key == "content":
+                if not isinstance(value, str) or len(value) > 100_000:
+                    raise ValueError("content must be a bounded string.")
+            elif key == "chunk":
+                if not isinstance(value, str) or len(value.encode("utf-8")) > 24000:
+                    raise ValueError("chunk exceeds the character patch transport budget.")
             elif not isinstance(value, str) or len(value) > 4096:
                 raise ValueError(f"{key} must be a bounded string.")
         if risk == "confirm" and not approved:
@@ -141,6 +220,139 @@ class ActionExecutor:
             "duration_ms": round((time.monotonic() - started) * 1000),
             "data": data,
         }
+
+    def _browser(self) -> ChromiumController:
+        executable = self.apps.get("chrome") or self.apps.get("edge") or self.apps.get("browser")
+        profile = self.settings.browser_profile_dir
+        if not executable or profile is None:
+            raise RuntimeError("No supported Chromium browser was discovered.")
+        return ChromiumController(executable, self.settings.browser_debug_port, profile)
+
+    def _browser_status(self, _arguments: Dict[str, Any]) -> Dict[str, Any]:
+        return self._browser().status()
+
+    def _browser_tabs(self, _arguments: Dict[str, Any]) -> Dict[str, Any]:
+        return {"tabs": self._browser().tabs()}
+
+    def _browser_snapshot(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        return self._browser().snapshot(str(arguments.get("tab_id") or "") or None)
+
+    def _browser_start(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        url = self._validated_browser_url(str(arguments.get("url") or "about:blank"), allow_blank=True)
+        return self._browser().start(url)
+
+    def _browser_action(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        operation = str(arguments.get("operation") or "").strip().casefold()
+        supported = {
+            "new_tab", "close_tab", "switch_tab", "navigate", "back", "forward", "reload",
+            "click", "type", "clear", "select", "check", "uncheck", "scroll", "handle_dialog",
+        }
+        if operation not in supported:
+            raise ValueError("Unsupported browser operation.")
+        clean = dict(arguments)
+        clean["operation"] = operation
+        if operation in {"navigate", "new_tab"}:
+            clean["url"] = self._validated_browser_url(str(arguments.get("url") or ""), allow_blank=operation == "new_tab")
+        if operation in {"click", "type", "clear", "select", "check", "uncheck"} and not arguments.get("target"):
+            raise ValueError("Semantic browser actions require a target locator.")
+        try:
+            return self._browser().action(operation, clean)
+        except BrowserAutomationError as exc:
+            raise RuntimeError(str(exc)) from exc
+
+    def _blender_operation(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        operation = str(arguments.get("operation") or "").strip().casefold()
+        if set(arguments) & {"view", "frame"} and operation != "render_production":
+            raise ValueError("Only production renders accept a bounded view/frame.")
+        if operation == "inspect_production_export":
+            if set(arguments)-{"operation","project"}: raise ValueError("Unexpected export inspection arguments.")
+            from .production_export import inspect_export
+            return inspect_export(self.paths, arguments)
+        if operation == "read_character_chunk":
+            if set(arguments)-{"operation", "project", "offset", "length"}:
+                raise ValueError("Unexpected canonical readback arguments.")
+            from .character_document import read_chunk
+            return read_chunk(self.paths, arguments)
+        if operation in {"stage_weights", "stage_character", "stage_production"}:
+            if set(arguments)-{"operation", "output", "chunk", "chunk_index", "chunk_count", "sha256"}:
+                raise ValueError("Unexpected character staging arguments.")
+            with self._character_patch_lock:
+                return stage_patch(self.paths, arguments, "production" if operation == "stage_production" else "character" if operation == "stage_character" else "weights")
+        if set(arguments) & {"offset", "length"}:
+            raise ValueError("Only canonical readback accepts offsets.")
+        if set(arguments) & {"chunk", "chunk_index", "chunk_count", "sha256"}:
+            raise ValueError("Only stage_weights accepts chunk data.")
+        executable = self.apps.get("blender")
+        if not executable:
+            raise RuntimeError("Blender was not discovered.")
+        if operation not in {"inspect_scene", "inspect_character", "render_current", "render_production", "export_gltf", "apply_weights", "verify_weights", "test_deformation", "build_character", "build_production", "present_production", "verify_production"}:
+            raise ValueError("Unsupported Blender operation.")
+        project = self.paths.resolve(str(arguments.get("project") or ""))
+        if not project.is_file() or project.suffix.casefold() != (".json" if operation in {"build_character","build_production"} else ".blend"):
+            raise ValueError("Blender project must be an existing .blend file inside an approved root.")
+        if operation in {"build_character","build_production"}:
+            from .character_document import validate_document
+            if project.stat().st_size > 32*1024*1024:
+                raise ValueError("Character construction input exceeds budget.")
+            validate_document(json.loads(project.read_text(encoding="utf-8")), construction=True)
+            if operation=="build_production":
+                from .production_contract import validate_production
+                validate_production(json.loads(project.read_text(encoding="utf-8")))
+        command = [executable, "--disable-autoexec", "--background"] + (["--factory-startup"] if operation in {"build_character","build_production"} else [str(project)])
+        command += ["--python", str(Path(__file__).with_name("blender_bridge.py")), "--", "--operation", operation]
+        if operation == "render_production":
+            view, frame = arguments.get("view", "ThreeQuarter"), arguments.get("frame", 1)
+            if view not in {"Front", "ThreeQuarter", "Back"} or not 1 <= frame <= 192:
+                raise ValueError("Unsupported production camera/frame.")
+            command.extend(("--view", view, "--frame", str(frame)))
+        if operation in {"build_character","build_production"}:
+            command.extend(("--character", str(project)))
+        output: Optional[Path] = None
+        if operation != "inspect_scene":
+            output = self.paths.resolve(str(arguments.get("output") or ""), must_exist=False)
+            self.paths.resolve(str(output.parent))
+            allowed = {".json"} if operation in {"inspect_character", "test_deformation", "verify_weights", "verify_production"} else {".blend"} if operation in {"apply_weights", "build_character", "build_production", "present_production"} else {".png", ".jpg", ".jpeg"} if operation in {"render_current", "render_production"} else {".gltf", ".glb"}
+            if output.suffix.casefold() not in allowed:
+                raise ValueError("Blender output extension does not match the requested operation.")
+            if output.exists():
+                raise ValueError("Blender output already exists; choose a new artifact path.")
+            command.extend(("--output", str(output)))
+        if operation in {"apply_weights", "verify_weights", "present_production"}:
+            patch = self.paths.resolve(str(arguments.get("patch") or ""))
+            if patch.suffix.casefold() != ".json" or not patch.is_file() or patch.stat().st_size > 32*1024*1024:
+                raise ValueError("Weight patch must be bounded JSON inside an approved root.")
+            command.extend(("--patch", str(patch)))
+            if operation=="present_production":
+                from .production_contract import validate_production
+                validate_production(json.loads(patch.read_text(encoding="utf-8")))
+        elif arguments.get("patch"):
+            raise ValueError("Only apply_weights/verify_weights accept a patch.")
+        timeout = max(10, min(int(arguments.get("timeout_seconds", self.settings.action_timeout_seconds)), 300))
+        completed = subprocess.run(
+            command, capture_output=True, text=True, timeout=timeout, check=False, shell=False,
+            env={key: os.environ[key] for key in ("SystemRoot", "WINDIR", "PATH", "PATHEXT", "TEMP", "TMP", "USERPROFILE", "LOCALAPPDATA", "APPDATA") if key in os.environ},
+        )
+        marker = "AKASHI_BLENDER_RESULT="
+        line = next((item for item in reversed(completed.stdout.splitlines()) if item.startswith(marker)), "")
+        if completed.returncode != 0 or not line:
+            detail = (completed.stderr or completed.stdout)[-1000:]
+            raise RuntimeError(f"Blender adapter failed: {detail}")
+        result = json.loads(line[len(marker):])
+        if not isinstance(result, dict) or not result.get("verified"):
+            raise RuntimeError("Blender operation did not produce verified output.")
+        if output is not None and (not output.is_file() or output.stat().st_size <= 0):
+            raise RuntimeError("Blender reported success but the output artifact is missing.")
+        return result
+
+    @staticmethod
+    def _validated_browser_url(value: str, allow_blank: bool = False) -> str:
+        url = value.strip()
+        if allow_blank and url == "about:blank":
+            return url
+        parsed = urlparse(url)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password:
+            raise ValueError("Browser navigation accepts only credential-free HTTP(S) URLs.")
+        return url
 
     def _system_status(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
         try:
@@ -330,7 +542,7 @@ class ActionExecutor:
         target = str(arguments.get("url") or "").strip()
         if target:
             parsed = urlparse(target)
-            if name not in {"edge", "chrome"} or parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password:
+            if name not in {"edge", "chrome", "browser"} or parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password:
                 raise ValueError("Only HTTP(S) URLs may be passed to an allowlisted browser.")
             command.append(target)
         process = subprocess.Popen(
@@ -409,7 +621,30 @@ class ActionExecutor:
             from PIL import ImageGrab
         except ImportError as exc:
             raise RuntimeError("Screenshots require the Pillow dependency.") from exc
-        image = ImageGrab.grab(all_screens=True)
+        window_id = arguments.get("window_id")
+        source_window = None
+        if window_id is not None:
+            state = list_windows(200)
+            source_window = next(
+                (item for item in state["windows"] if item["window_id"] == int(window_id)),
+                None,
+            )
+            if source_window is None:
+                raise ValueError("Screenshot window is no longer available.")
+            bounds = source_window["bounds"]
+            bbox = (
+                bounds["x"], bounds["y"],
+                bounds["x"] + bounds["width"], bounds["y"] + bounds["height"],
+            )
+            image = ImageGrab.grab(bbox=bbox, all_screens=True)
+            virtual_screen = {
+                "x": bounds["x"], "y": bounds["y"],
+                "width": bounds["width"], "height": bounds["height"],
+            }
+        else:
+            image = ImageGrab.grab(all_screens=True)
+            virtual_screen = list_windows(1)["virtual_screen"]
+        original_width, original_height = image.width, image.height
         if image.width > 1600:
             height = round(image.height * (1600 / image.width))
             image.thumbnail((1600, height))
@@ -422,6 +657,14 @@ class ActionExecutor:
             "media_type": "image/jpeg",
             "width": image.width,
             "height": image.height,
+            "original_width": original_width,
+            "original_height": original_height,
+            "virtual_screen": virtual_screen,
+            "source_window": {
+                "window_id": source_window["window_id"],
+                "title": source_window["title"],
+                "process_name": source_window["process_name"],
+            } if source_window else None,
             "base64": base64.b64encode(content).decode("ascii"),
         }
 
@@ -518,6 +761,164 @@ class ActionExecutor:
             raise ValueError("The requested npm script is not declared by this project.")
         timeout = max(1, min(int(arguments.get("timeout_seconds", self.settings.action_timeout_seconds)), 300))
         return run_pinned_script(project, package_file, script, self.settings.script_registry, timeout, self.settings.max_output_chars)
+
+    def _get_desktop_state(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        return list_windows(max(1, min(int(arguments.get("limit", 100)), 200)))
+
+    @staticmethod
+    def _window_control(arguments: Dict[str, Any]) -> Dict[str, Any]:
+        return control_window(arguments)
+
+    @staticmethod
+    def _computer_input(arguments: Dict[str, Any]) -> Dict[str, Any]:
+        return computer_input(arguments)
+
+    def _read_text_file(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        path = self.paths.resolve(str(arguments.get("path") or ""))
+        if not path.is_file():
+            raise ValueError("Path is not a file.")
+        max_chars = max(1, min(int(arguments.get("max_chars", 40_000)), 100_000))
+        if path.stat().st_size > 2_000_000:
+            raise ValueError("File is too large for bounded text reading.")
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValueError("File is not UTF-8 text.") from exc
+        return {
+            "path": str(path),
+            "content": text[:max_chars],
+            "truncated": len(text) > max_chars,
+        }
+
+    def _file_operation(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        operation = str(arguments.get("operation") or "").strip().casefold()
+        overwrite = bool(arguments.get("overwrite", False))
+        if operation == "create_text":
+            destination = self.paths.resolve(
+                str(arguments.get("destination") or ""), must_exist=False
+            )
+            self.paths.resolve(str(destination.parent))
+            if destination.exists() and not overwrite:
+                raise FileExistsError("Destination already exists; overwrite was not approved.")
+            content = str(arguments.get("content") or "")
+            if len(content) > 100_000:
+                raise ValueError("Text content exceeds the 100000 character limit.")
+            temporary = destination.with_name(f".{destination.name}.akashi-tmp")
+            temporary.write_text(content, encoding="utf-8")
+            temporary.replace(destination)
+            return {
+                "operation": operation,
+                "destination": str(destination),
+                "verified": destination.is_file(),
+            }
+
+        source = self.paths.resolve(str(arguments.get("source") or ""))
+        destination = self.paths.resolve(
+            str(arguments.get("destination") or ""), must_exist=False
+        )
+        self.paths.resolve(str(destination.parent))
+        if destination.exists() and not overwrite:
+            raise FileExistsError("Destination already exists; overwrite was not approved.")
+        if operation == "copy":
+            if source.is_dir():
+                if destination.exists():
+                    raise FileExistsError("Directory destination already exists.")
+                self._validate_tree_size(source)
+                shutil.copytree(source, destination)
+            else:
+                shutil.copy2(source, destination)
+        elif operation in {"move", "rename"}:
+            shutil.move(str(source), str(destination))
+        else:
+            raise ValueError("Unsupported file operation.")
+        moved = operation in {"move", "rename"}
+        return {
+            "operation": operation,
+            "source": str(source),
+            "destination": str(destination),
+            "verified": destination.exists() and (not moved or not source.exists()),
+        }
+
+    @staticmethod
+    def _validate_tree_size(root: Path) -> None:
+        count = 0
+        total = 0
+        deadline = time.monotonic() + 5
+        for directory, dirs, files in os.walk(root, followlinks=False):
+            safe_dirs = []
+            for name in dirs:
+                path = Path(directory) / name
+                if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
+                    continue
+                safe_dirs.append(name)
+            dirs[:] = safe_dirs
+            for name in files:
+                path = Path(directory) / name
+                if path.is_symlink():
+                    raise ValueError("Directory copies cannot contain symbolic links.")
+                count += 1
+                total += path.stat().st_size
+                if count > 5_000 or total > 512 * 1024 * 1024 or time.monotonic() > deadline:
+                    raise ValueError("Directory copy exceeds the bounded file, size or scan limit.")
+
+    def _inspect_git(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        project = self.paths.resolve(str(arguments.get("project") or ""))
+        if not project.is_dir() or not (project / ".git").exists():
+            raise ValueError("Project is not a Git working tree.")
+        git = shutil.which("git")
+        if not git:
+            raise RuntimeError("Git is not installed.")
+        operation = str(arguments.get("operation") or "status").strip().casefold()
+        limit = max(1, min(int(arguments.get("limit", 20)), 100))
+        if operation == "status":
+            command = [git, "status", "--short", "--branch"]
+        elif operation == "branch":
+            command = [git, "branch", "--show-current"]
+        elif operation == "log":
+            command = [git, "log", "--oneline", "--decorate", "-n", str(limit)]
+        elif operation == "show":
+            relative = str(arguments.get("path") or "").strip()
+            path_arguments: List[str] = []
+            if relative:
+                candidate = self.paths.resolve(str(project / relative))
+                try:
+                    relative = str(candidate.relative_to(project))
+                except ValueError as exc:
+                    raise PermissionError("Git path must stay inside the selected project.") from exc
+                path_arguments = ["--", relative]
+            revision = str(arguments.get("revision") or "HEAD").strip()
+            if revision.startswith("-") or not re.fullmatch(r"[A-Za-z0-9_./^~-]{1,100}", revision):
+                raise ValueError("Invalid Git revision.")
+            command = [git, "show", "--stat", "--no-patch", "--oneline", "--no-ext-diff", revision, *path_arguments]
+        else:
+            raise ValueError("Unsupported Git inspection operation.")
+        child_environment = {
+            key: os.environ[key]
+            for key in ("SystemRoot", "WINDIR", "PATH", "PATHEXT", "TEMP", "TMP", "USERPROFILE", "LOCALAPPDATA", "APPDATA")
+            if key in os.environ
+        }
+        child_environment["GIT_TERMINAL_PROMPT"] = "0"
+        completed = subprocess.run(
+            command,
+            cwd=project,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=20,
+            check=False,
+            shell=False,
+            env=child_environment,
+        )
+        output = (completed.stdout + completed.stderr)[: self.settings.max_output_chars]
+        return {
+            "operation": operation,
+            "project": str(project),
+            "exit_code": completed.returncode,
+            "output": output,
+            "truncated": len(completed.stdout) + len(completed.stderr) > self.settings.max_output_chars,
+            "verified": completed.returncode == 0,
+        }
 
 
 def _number(value: str) -> Optional[float]:

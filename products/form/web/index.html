@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FORM · Character Studio</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/" aria-label="FORM home"
+        ><span class="brand-mark">F</span><b>FORM</b
+        ><small>CHARACTER STUDIO</small></a
+      ><span class="header-rule"></span
+      ><span id="project-title">A new dimension of your work.</span
+      ><span class="engine-badge" id="health">Connecting to local engine</span
+      ><button id="export" disabled>Export ↗</button>
+    </header>
+    <div class="workspace">
+      <aside class="library">
+        <div class="section-head">
+          <span>PROJECTS</span
+          ><button id="new-project" aria-label="New project">＋</button>
+        </div>
+        <div id="projects"></div>
+        <div class="library-bottom">
+          <span class="eyebrow">INDEPENDENT BY DESIGN</span>
+          <p>Your projects. Your engine.<br />No AKASHI Core required.</p>
+          <button id="about">Engine & limitations</button>
+        </div>
+      </aside>
+      <main>
+        <div class="project-bar">
+          <div>
+            <span class="eyebrow">CHARACTER WORKSPACE</span>
+            <h1 id="name">Start with an intention.</h1>
+          </div>
+          <div class="view-switch" aria-label="Workspace view">
+            <button data-view="render" class="selected">Studio</button
+            ><button data-view="3d">3D</button
+            ><button data-view="compare">Compare</button
+            ><button data-view="learning">Learning</button>
+          </div>
+        </div>
+        <div id="stage" class="stage">
+          <div id="empty">
+            <div class="empty-orbit" aria-hidden="true"><span>F</span></div>
+            <span class="eyebrow">IDEA → STRUCTURE → EVIDENCE</span>
+            <h2>Give your character a place to grow.</h2>
+            <p>
+              Create a project. Add references or a character asset.<br />Shape
+              a design with the expert engine, then inspect what it actually
+              builds.
+            </p>
+            <button id="start-project" class="primary">
+              Create character project <span>↗</span>
+            </button>
+            <div class="empty-details">
+              <span>01 / Persistent projects</span
+              ><span>02 / Non-destructive versions</span
+              ><span>03 / Evidence-led learning</span>
+            </div>
+          </div>
+          <img id="render-image" alt="Selected production render" hidden />
+          <div id="viewer" hidden></div>
+          <div id="compare" hidden>
+            <div>
+              <select id="compare-a" aria-label="First version"></select
+              ><img id="compare-image-a" alt="First version render" />
+            </div>
+            <div>
+              <select id="compare-b" aria-label="Second version"></select
+              ><img id="compare-image-b" alt="Second version render" />
+            </div>
+          </div>
+          <div id="learning" hidden></div>
+          <div class="stage-caption" id="caption" hidden>
+            <span id="version-caption"></span
+            ><span>ACTUAL ARTIFACT · ARTISTIC FIDELITY UNMEASURED</span>
+          </div>
+          <div id="viewer-controls" hidden>
+            <button id="wire">Wireframe</button
+            ><button id="skeleton">Skeleton</button
+            ><button id="motion">Play animation</button
+            ><select id="clips" aria-label="Animation clip"></select>
+          </div>
+        </div>
+        <div class="timeline-header">
+          <span>VERSION HISTORY</span
+          ><span id="run-state">No production started</span>
+          <div>
+            <button id="pause" disabled>Pause</button
+            ><button id="resume" disabled>Resume</button
+            ><button id="reconcile" disabled>Inspect / reconcile</button
+            ><button id="cancel" disabled>Cancel</button>
+          </div>
+        </div>
+        <div class="versions" id="versions">
+          <p class="muted">
+            Every attempt stays inspectable. A new version never overwrites your
+            best.
+          </p>
+        </div>
+        <div class="workflow">
+          <span>ANALYZE</span><i>→</i><span>BUILD</span><i>→</i><span>TEST</span
+          ><i>→</i><span>COMPARE</span><i>→</i><span>KEEP BEST</span
+          ><span class="scope"
+            >Technical evidence, not a fabricated quality score.</span
+          >
+        </div>
+      </main>
+      <aside class="copilot">
+        <nav class="detail-tabs">
+          <button data-tab="intent" class="selected">AI partner</button
+          ><button data-tab="inspect">Inspector</button>
+        </nav>
+        <section id="intent-tab">
+          <div class="partner-intro">
+            <span class="status-dot"></span><span>THE CHARACTER EXPERT</span>
+            <p>Describe the result.<br />Stay in control of the work.</p>
+          </div>
+          <div id="messages" class="messages">
+            <p class="muted">
+              Project context, design proposals and execution evidence belong
+              here.
+            </p>
+          </div>
+          <form id="message-form">
+            <label for="message">Your intention</label
+            ><textarea
+              id="message"
+              placeholder="A slender character with a long coat and character-attached energy rings…"
+              maxlength="3500"
+              rows="3"
+            ></textarea>
+            <div class="message-actions">
+              <label class="toggle"
+                ><input id="use-model" type="checkbox" checked /> Use configured
+                model (local by default)</label
+              ><button type="submit" id="send">Propose ↗</button>
+            </div>
+          </form>
+          <p id="capability-advice" class="fine" role="status"></p>
+          <details class="design-panel" open>
+            <summary>
+              Production controls <span>STYLIZED HUMANOID</span>
+            </summary>
+            <div class="design-grid">
+              <label>Appearance<select id="appearance"><option value="atelier">Atelier / local sculpt</option><option value="classic">Classic / legacy</option></select></label>
+              <label
+                >Build<select id="build-type">
+                  <option>balanced</option>
+                  <option>slender</option>
+                  <option>strong</option>
+                </select></label
+              ><label
+                >Clothing<select id="clothing">
+                  <option>coat</option>
+                  <option>bodysuit</option>
+                  <option>armor</option>
+                </select></label
+              ><label
+                >Hair<select id="hair">
+                  <option>short</option>
+                  <option>long</option>
+                  <option>none</option>
+                </select></label
+              ><label
+                >Height · m<input
+                  id="height"
+                  type="number"
+                  min="0.6"
+                  max="3"
+                  step="0.05"
+                  value="1.8" /></label
+              ><label class="toggle"
+                ><input id="hud" type="checkbox" /> Character HUD/VFX</label
+              ><label class="toggle"
+                ><input id="facial" type="checkbox" checked /> Basic facial
+                controls</label
+              >
+            </div>
+            <button id="build" class="primary" disabled>
+              Build a new version ↗
+            </button>
+            <p class="fine">
+              Real Blender execution. Shaped face, tailored layers, scalp/locks and FK. Anatomy remains segmented.
+              Not professional reconstruction.
+            </p>
+          </details>
+          <div class="sources">
+            <div class="section-head">
+              <span>REFERENCES & ASSETS</span
+              ><button id="attach">＋ Add</button>
+            </div>
+            <div id="references">
+              <p class="muted">
+                Local palette/silhouette analysis works without APIs. Specialist vision is optional.
+                Assets retain source provenance.
+              </p>
+            </div>
+            <input
+              id="upload"
+              type="file"
+              hidden
+              accept=".png,.jpg,.jpeg,.webp,.glb,.gltf,.obj,.json,.blend"
+            /><label class="toggle"
+              ><input id="synthetic" type="checkbox" /> This asset is
+              synthetic/test data</label
+            >
+          </div>
+        </section>
+        <section id="inspect-tab" hidden>
+          <div id="inspector">
+            <p>Select a version or asset to inspect real evidence.</p>
+          </div>
+        </section>
+      </aside>
+    </div>
+    <footer>
+      <span id="notice" role="status">Ready for a new project.</span
+      ><span>LOCAL-FIRST · HEADLESS ENGINE · NON-DESTRUCTIVE</span>
+    </footer>
+    <dialog id="project-dialog">
+      <form id="project-form">
+        <span class="eyebrow">NEW CHARACTER PROJECT</span>
+        <h2>Make room for your next character.</h2>
+        <label for="project-name">Project name</label
+        ><input
+          id="project-name"
+          required
+          maxlength="120"
+          placeholder="Untitled character"
+        /><label for="project-brief">Production brief</label
+        ><textarea
+          id="project-brief"
+          maxlength="3500"
+          rows="4"
+          placeholder="What are we building? What matters most?"
+        ></textarea>
+        <div class="dialog-actions">
+          <button id="close-dialog" type="button">Cancel</button
+          ><button class="primary" type="submit">Create project ↗</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="about-dialog">
+      <span class="eyebrow">FORM / ENGINE BOUNDARY</span>
+      <h2>Capability without theatre.</h2>
+      <p>
+        This product reuses the real character expertise engine. It does not
+        start AKASHI Core, phone, voice, scheduler or the Windows Agent HTTP
+        server.
+      </p>
+      <p>
+        Available: synthetic stylized humanoid construction, numeric correction,
+        Blender readback, pose tests, renders, animated GLB export, source
+        analysis and protected Blender presentation copies.
+      </p>
+      <p>
+        Not proven: professional anatomical topology, artistic reference
+        fidelity, production facial rigs, cloth/hair simulation, arbitrary asset
+        reconstruction or engine-specific acceptance.
+      </p>
+      <p>
+        Training is measured synthetic practice. It is not neural fine-tuning or
+        professional mastery.
+      </p>
+      <button id="close-about">Understood</button>
+    </dialog>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

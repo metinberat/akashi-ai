@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>AKASHI V2 Browser Harness</title></head>
+<body>
+  <main>
+    <input id="hidden-before-index" style="display:none" value="DO NOT TOUCH">
+    <h1>AKASHI V2 Semantic Browser Test</h1>
+    <label for="objective">Objective</label>
+    <input id="objective" placeholder="Enter objective" aria-label="Objective">
+    <button id="verify" type="button">Verify workflow</button>
+    <p id="result" role="status">WAITING</p>
+    <a href="second.html" id="details">Open details</a>
+    <button type="button">Duplicate target</button><button type="button">Duplicate target</button>
+  </main>
+  <script>
+    document.querySelector('#verify').addEventListener('click', () => {
+      document.querySelector('#result').textContent = `VERIFIED: ${document.querySelector('#objective').value}`;
+      history.pushState({ verified: true }, '', '#verified');
+    });
+  </script>
+</body>
+</html>

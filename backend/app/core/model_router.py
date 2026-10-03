@@ -35,6 +35,22 @@ class ModelRouter:
     def vision_configured(self) -> bool:
         return bool(self._model_names["vision"] and self._provider_names["vision"] in {"ollama", "gemini"})
 
+    def reasoning_candidates(self) -> list:
+        """Backend-controlled local fallback; never substitute mock for inference."""
+        try:
+            primary = self.provider_for("reasoning")
+        except ProviderConfigurationError:
+            if not self.settings.autonomy_local_fallback:
+                raise
+            primary = None
+        candidates = [primary] if primary is not None else []
+        if (primary is None or primary.name != "ollama") and self.settings.autonomy_local_fallback:
+            key = f"ollama:{self.settings.ollama_model}"
+            if key not in self._providers:
+                self._providers[key] = create_named_provider(self.settings, "ollama", self.settings.ollama_model)
+            candidates.append(self._providers[key])
+        return candidates
+
     def profile_for_provider(self, provider: AIProvider) -> Optional[ModelProfile]:
         for profile, name in self._provider_names.items():
             if name == provider.name:

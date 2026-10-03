@@ -154,6 +154,18 @@ export type VoiceSession = {
   generation: number;
 };
 
+export type AutonomySubgoal = {
+  id: string; title: string; channel: string; status: string; attempts: number;
+  acceptance: string; evaluation?: string; error?: string | null;
+};
+
+export type AutonomyTask = {
+  id: string; title: string; goal: string; status: string; plan_revision: number; replans: number;
+  subgoals: AutonomySubgoal[];
+  artifacts: Array<{ kind: string; value: string; verified: boolean }>;
+  summary?: string; error?: string | null; updated_at: string;
+};
+
 async function jsonRequest<T>(
   config: BackendConfig,
   path: string,
@@ -379,4 +391,56 @@ export function interruptVoiceSession(config: BackendConfig, id: string) {
 
 export async function stopVoiceSession(config: BackendConfig, id: string) {
   await apiFetch(config, `/voice/sessions/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function listAutonomyTasks(config: BackendConfig) {
+  return (await jsonRequest<{ tasks: AutonomyTask[] }>(config, "/autonomy/tasks?limit=30")).tasks;
+}
+
+export function resumeAutonomyTask(config: BackendConfig, id: string, approved?: boolean) {
+  return jsonRequest<AutonomyTask>(config, `/autonomy/tasks/${encodeURIComponent(id)}/resume`, jsonInit("POST", approved === undefined ? {} : { approved }));
+}
+
+export function cancelAutonomyTask(config: BackendConfig, id: string) {
+  return jsonRequest<AutonomyTask>(config, `/autonomy/tasks/${encodeURIComponent(id)}/cancel`, { method: "POST" });
+}
+
+export type CharacterSummary = { id: string; name: string; synthetic: number; joint_count: number; mesh_count: number; parser: string; created_at: string };
+export type CharacterKnowledge = { id: string; kind: string; topic: string; statement: string; validation: string; confidence: number; provenance: { synthetic: boolean; asset_id: string } };
+
+export function getCharacterExpertise(config: BackendConfig) {
+  return jsonRequest<{ characters: CharacterSummary[] }>(config, "/expertise/characters?limit=20");
+}
+
+export function queryCharacterKnowledge(config: BackendConfig, query: string) {
+  return jsonRequest<{ knowledge: CharacterKnowledge[] }>(config, `/expertise/knowledge?query=${encodeURIComponent(query)}&limit=6`);
+}
+
+export type CharacterImprovement = { id: string; asset_id: string; status: string; attempts: number; max_attempts: number; synthetic: boolean; best_version: string; baseline_version: string };
+export type CharacterVersion = { id: string; decision: { accepted: boolean; reasons: string[] }; evaluation: { score: number; scope: string; integrity: { defective_vertices: number }; deformation: { available: boolean } } };
+
+export async function listCharacterImprovements(config: BackendConfig) {
+  const value = await jsonRequest<{ workshops: CharacterImprovement[] }>(config, "/expertise/workshops");
+  if (!Array.isArray(value.workshops)) throw new Error("Invalid workshop state returned by Core.");
+  return value;
+}
+
+export function createCharacterImprovement(config: BackendConfig, assetId: string) {
+  return jsonRequest<CharacterImprovement>(config, "/expertise/workshops", jsonInit("POST", { asset_id: assetId }));
+}
+
+export function runCharacterImprovement(config: BackendConfig, id: string) {
+  return jsonRequest<CharacterImprovement>(config, `/expertise/workshops/${encodeURIComponent(id)}/run?steps=2`, { method: "POST" });
+}
+
+export function cancelCharacterImprovement(config: BackendConfig, id: string) {
+  return jsonRequest<CharacterImprovement>(config, `/expertise/workshops/${encodeURIComponent(id)}/cancel`, { method: "POST" });
+}
+
+export function getCharacterVersions(config: BackendConfig, id: string) {
+  return jsonRequest<{ versions: CharacterVersion[] }>(config, `/expertise/workshops/${encodeURIComponent(id)}/versions`);
+}
+
+export function rollbackCharacterImprovement(config: BackendConfig, id: string, versionId: string) {
+  return jsonRequest<CharacterImprovement>(config, `/expertise/workshops/${encodeURIComponent(id)}/rollback`, jsonInit("POST", { version_id: versionId }));
 }

@@ -21,7 +21,9 @@ class IntelligenceTests(unittest.TestCase):
         return {
             "title": title,
             "category": "AKASHI Watch",
-            "publication_date": "2026-09-18T00:00:00+00:00",
+            # Keep the daily-brief fixture inside its seven-day selection window.
+            # A fixed calendar date made this otherwise deterministic test expire.
+            "publication_date": datetime.now(timezone.utc).isoformat(),
             "summary": "A source summary.",
             "source": {"url": url, "title": title, "provider": "official", "publication_date": None},
             "why_it_matters": "Image pipeline update.",

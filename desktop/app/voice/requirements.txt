@@ -1,0 +1,17 @@
+# Python dependencies for the desktop voice workers (live.py and listen.py).
+#
+# These run under the interpreter that runtime-supervisor.cjs discovers for
+# AKASHI_VOICE_PYTHON (py -3.11 by default), NOT the backend virtualenv, so they
+# are declared separately from backend/requirements.txt.
+#
+# google-genai is pinned to the version the always-on Gemini Live session was
+# verified against. The backend pins a different major (2.8.0); do not assume
+# one version satisfies both.
+
+numpy==2.4.4
+sounddevice==0.5.5
+google-genai==1.74.0
+httpx==0.28.1
+
+# listen.py only (the pre-Live Whisper fallback path).
+openai-whisper==20250625

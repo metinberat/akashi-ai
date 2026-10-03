@@ -123,9 +123,12 @@ export async function liveVoiceAvailable(): Promise<boolean> {
   }
 }
 
-export function startLiveVoice(language: "auto" | "tr" | "en" = "auto"): Promise<{ started: boolean; alreadyRunning?: boolean }> {
+export function startLiveVoice(
+  language: "auto" | "tr" | "en" = "auto",
+  sessionId?: string,
+): Promise<{ started: boolean; alreadyRunning?: boolean }> {
   if (!window.akashiDesktop?.voice.live) return Promise.reject(new Error("Live voice is not available."));
-  return window.akashiDesktop.voice.live.start({ language });
+  return window.akashiDesktop.voice.live.start({ language, sessionId });
 }
 
 export function stopLiveVoice(): Promise<boolean> {

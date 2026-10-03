@@ -1,0 +1,7 @@
+# Reuse an installed compatible environment; standalone does not boot AKASHI Core.
+fastapi==0.141.1
+uvicorn==0.34.0
+pydantic==2.10.6
+python-multipart==0.0.32
+Pillow>=11.3
+httpx==0.28.1

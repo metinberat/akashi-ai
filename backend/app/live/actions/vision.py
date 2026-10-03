@@ -72,6 +72,9 @@ class ScreenVisionAction(OneShotVisionAction):
         text = normalize_text(message)
         source = any(word in text for word in ("ekran", "screen", "desktop", "screenshot"))
         inspect = any(word in text for word in ("bak", "goru", "gordugunu", "incele", "look", "see", "analyze", "inspect"))
+        control = any(word in text for word in ("tikla", "click", "yaz", "type", "surukle", "drag", "kaydir", "scroll", "kapat", "close"))
+        if control:
+            return None
         return ActionMatch(score=120, arguments={}, approved=True) if source and inspect else None
 
 

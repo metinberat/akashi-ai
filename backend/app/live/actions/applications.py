@@ -20,6 +20,12 @@ ALIASES = {
     "terminal": "terminal",
     "powershell": "terminal",
     "spotify": "spotify",
+    "discord": "discord",
+    "notepad": "notepad",
+    "explorer": "explorer",
+    "file explorer": "explorer",
+    "dosya gezgini": "explorer",
+    "blender": "blender",
 }
 LABELS = {
     "vscode": "VS Code",
@@ -28,6 +34,10 @@ LABELS = {
     "browser": "Tarayıcı",
     "terminal": "Terminal",
     "spotify": "Spotify",
+    "discord": "Discord",
+    "notepad": "Notepad",
+    "explorer": "Dosya Gezgini",
+    "blender": "Blender",
 }
 
 

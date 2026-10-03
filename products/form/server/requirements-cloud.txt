@@ -1,0 +1,2 @@
+# Optional specialist adapter; not required by the local FORM runtime.
+google-genai==2.8.0

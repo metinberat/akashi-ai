@@ -14,14 +14,21 @@ class PathPolicy:
     def resolve(self, raw_path: str, must_exist: bool = True) -> Path:
         if not raw_path or "\x00" in raw_path:
             raise ValueError("A valid path is required.")
-        candidate = Path(raw_path).expanduser().resolve(strict=must_exist)
-        if not any(candidate == root or root in candidate.parents for root in self.roots):
-            raise PermissionError("Path is outside the configured AKASHI roots.")
-        if any(part.casefold() in {".git", ".ssh", ".aws", ".azure", ".gnupg", "node_modules", ".venv"}
-               or part.casefold().startswith(".env") for part in candidate.parts):
-            raise PermissionError("Credential and internal directories are excluded.")
-        if candidate.suffix.casefold() in {".pem", ".key", ".pfx", ".p12", ".credential", ".secure"}:
-            raise PermissionError("Credential files are excluded.")
+        candidate = Path(raw_path).expanduser().resolve(strict=False)
+        def check(path):
+            if not any(path == root or root in path.parents for root in self.roots):
+                raise PermissionError("Path is outside the configured AKASHI roots.")
+            if any(part.casefold() in {".git", ".ssh", ".aws", ".azure", ".gnupg", "node_modules", ".venv"}
+                   or part.casefold().startswith(".env") for part in path.parts):
+                raise PermissionError("Credential and internal directories are excluded.")
+            if path.suffix.casefold() in {".pem", ".key", ".pfx", ".p12", ".credential", ".secure"}:
+                raise PermissionError("Credential files are excluded.")
+        # Check authority before existence, so an excluded path cannot act as a
+        # file-existence oracle. Recheck after strict symlink/junction resolution.
+        check(candidate)
+        if must_exist:
+            candidate = candidate.resolve(strict=True)
+            check(candidate)
         return candidate
 
 

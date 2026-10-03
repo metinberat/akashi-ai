@@ -24,7 +24,7 @@ class EventHub:
         }
         # Observable metadata only. Source text, tool arguments/results, tokens,
         # private content and model reasoning never enter the HUD feed.
-        allowed = {"request_id", "interaction_id", "task_id", "state", "status", "action", "source_count", "tool", "step_id"}
+        allowed = {"request_id", "interaction_id", "task_id", "call_id", "state", "status", "action", "source_count", "tool", "step_id"}
         self._recent.append({**event, "data": {
             key: value for key, value in data.items()
             if key in allowed and isinstance(value, (str, int, bool))

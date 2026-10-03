@@ -11,6 +11,19 @@ from app.core.brain import AkashiBrain, BrainResponse
 from app.core.config import Settings, get_settings
 from app.core.model_router import ModelProfile, ModelRouter
 from app.core.persona import build_system_prompt
+from app.computer.service import ComputerAgentService
+from app.computer.store import JSONComputerStateStore
+from app.computer.browser_service import SemanticBrowserAgent
+from app.autonomy.engine import LongHorizonTaskEngine
+from app.autonomy.knowledge import KnowledgeStore
+from app.autonomy.skills import SkillLibrary
+from app.autonomy.store import JSONAutonomyStore
+from app.expertise.service import CharacterExpertiseService
+from app.expertise.store import ExpertiseStore
+from app.expertise.tools import ImproveCharacterTool, InspectCharacterImprovementTool, MaterializeCharacterTool, RefineCharacterTool
+from app.expertise.training.tools import TrainYourselfTool, TrainingStatusTool, ProductionRecipeTool, TrainingControlTool, ApplyLearnedMethodTool
+from app.expertise.production.host import ProductionHost
+from app.expertise.production.tools import BuildCharacterTool, InspectProductionTool, PracticeProductionTool, ControlProductionTool
 from app.devices.store import DeviceStore
 from app.events.hub import event_hub
 from app.files.service import FileIntelligenceService
@@ -19,6 +32,8 @@ from app.intelligence.service import IntelligenceService
 from app.intelligence.store import JSONIntelligenceStore
 from app.memory.json_memory import JSONMemory
 from app.memory.long_term import JSONLongTermMemory
+from app.phone.service import PhoneService
+from app.phone.store import JSONPhoneCallStore
 from app.live.actions.base import LiveActionRuntime
 from app.live.core import AkashiLiveCore
 from app.live.desktop import DesktopActionGateway
@@ -70,6 +85,8 @@ class AkashiCore:
             "run_once",
         )
         self.voice_sessions = VoiceSessionManager(settings.voice_state_file)
+        self.phone_calls = JSONPhoneCallStore(settings.phone_calls_file)
+        self.phone = PhoneService(settings, self.phone_calls)
         self.schedule_store.ensure_interval(
             "miss-minutes-daily-brief",
             "AKASHI Daily Intelligence",
@@ -122,12 +139,47 @@ class AkashiCore:
             files=self.files,
         )
         self.desktop = DesktopActionGateway(settings, self.devices)
+        self.computer = ComputerAgentService(
+            self.desktop,
+            self.model_router,
+            event_hub,
+            JSONComputerStateStore(settings.computer_state_file),
+            settings.computer_max_steps,
+        )
+        self.autonomy_skills = SkillLibrary(settings.autonomy_skill_file)
+        self.autonomy_knowledge = KnowledgeStore(settings.autonomy_knowledge_file)
+        self.expertise = CharacterExpertiseService(ExpertiseStore(settings.expertise_db), self.autonomy_knowledge)
+        self.expertise.attach_skill_library(self.autonomy_skills)
+        self.production_host = ProductionHost(self.expertise.production, self.desktop)
+        self.tools.register(BuildCharacterTool(self.production_host, self.model_router))
+        self.tools.register(InspectProductionTool(self.production_host))
+        self.tools.register(PracticeProductionTool(self.expertise.production))
+        self.tools.register(ControlProductionTool(self.production_host))
+        for tool in (ImproveCharacterTool(self.expertise.workshop), InspectCharacterImprovementTool(self.expertise.workshop),
+                     MaterializeCharacterTool(self.expertise.workshop, self.desktop), RefineCharacterTool(self.expertise.workshop, self.desktop),
+                     TrainYourselfTool(self.expertise), TrainingStatusTool(self.expertise), ProductionRecipeTool(self.expertise),
+                     TrainingControlTool(self.expertise), ApplyLearnedMethodTool(self.expertise)):
+            self.tools.register(tool)
+        self.autonomy_knowledge.expert_search = self.expertise.retrieve
+        self.autonomy = LongHorizonTaskEngine(
+            JSONAutonomyStore(settings.autonomy_state_file),
+            self.computer,
+            self.model_router,
+            event_hub,
+            self.autonomy_skills,
+            self.autonomy_knowledge,
+            max_subgoals=settings.autonomy_max_subgoals,
+            browser=SemanticBrowserAgent(self.desktop, self.model_router),
+            experience_sink=self.expertise.record_experience,
+        )
         self.live = AkashiLiveCore(
             LiveActionRuntime(
                 settings=settings,
                 desktop=self.desktop,
                 brain=self.brain,
                 model_router=self.model_router,
+                computer=self.computer,
+                autonomy=self.autonomy,
             ),
             event_hub,
             JSONInteractionStore(settings.live_state_file),

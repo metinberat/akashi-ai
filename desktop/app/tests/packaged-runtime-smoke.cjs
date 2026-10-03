@@ -82,6 +82,66 @@ function processAlive(pid) {
     const originalCorePid = state.components.core.pid;
     const originalAgentPid = state.components.agent.pid;
     console.log(`PACKAGED_READY core=${originalCorePid} agent=${originalAgentPid}`);
+    for (const route of ["/autonomy/tasks", "/expertise/characters", "/expertise/experiences", "/expertise/workshops", "/expertise/workshops/evidence"]) {
+      const response = await page.evaluate((path) => window.akashiDesktop.api.fetch({ path, method: "GET", headers: {}, body: { kind: "none" }, authenticated: true }), route);
+      assert.equal(response.status, 200, `packaged ${route} failed`);
+      assert.ok(JSON.parse(Buffer.from(response.body, "base64").toString("utf8")));
+    }
+    assert.ok(fs.existsSync(path.join(userData, "runtime", "core", "private", "expertise.sqlite3")));
+    console.log("V2_V3_PACKAGED_API_AND_WRITABLE_STORAGE ok");
+    async function coreRequest(path, value) {
+      const response = await page.evaluate(({ path, value }) => window.akashiDesktop.api.fetch({ path, method: value ? "POST" : "GET",
+        headers: value ? { "Content-Type": "application/json" } : {}, body: value ? { kind: "text", value: JSON.stringify(value) } : { kind: "none" }, authenticated: true }), { path, value });
+      assert.ok(response.status >= 200 && response.status < 300, `${path}: ${response.status}`);
+      return JSON.parse(Buffer.from(response.body, "base64").toString("utf8"));
+    }
+    const specialistTools = await coreRequest("/tools");
+    for (const name of ["character.improve", "character.improvement_status", "character.materialize_blender", "character.refine_blender",
+                       "character.train_yourself", "character.training_status", "character.production_recipe", "character.training_control", "character.apply_learned_method",
+                       "character.build", "character.production_status", "character.practice_production", "character.production_control"]) {
+      assert.equal(specialistTools.tools.filter((tool) => tool.name === name).length, 1, `${name} missing/duplicated in packaged Core`);
+    }
+    assert.equal(specialistTools.tools.find((tool) => tool.name === "character.refine_blender").risk, "confirm");
+    console.log("V31_SPECIALIST_TOOLS_REGISTERED_WITH_APPROVAL_BOUNDARY ok");
+    const syntheticAsset = await coreRequest("/expertise/characters", {
+      source: { reference: "synthetic:packaged-v31-test", synthetic: true, category: "synthetic_fixture" },
+      character: { name: "SYNTHETIC-PACKAGED-WEIGHT-FIXTURE", metadata: { synthetic: true },
+        joints: [{ id: "bone", name: "synthetic_bone" }],
+        meshes: [{ id: "mesh", name: "synthetic_triangle", vertex_count: 3, positions: [[0,0,0],[1,0,0],[0,1,0]], faces: [[0,1,2]], skin_id: "skin" }],
+        skins: [{ id: "skin", mesh_id: "mesh", joints: ["bone"], weights: [{ bone: .3 },{ bone: 1 },{ bone: 1 }] }] },
+    });
+    const workshop = await coreRequest("/expertise/workshops", { asset_id: syntheticAsset.id });
+    const pausedWorkshop = await coreRequest(`/expertise/workshops/${workshop.id}/run?steps=1`, {});
+    assert.equal(pausedWorkshop.status, "paused");
+    assert.notEqual(pausedWorkshop.best_version, workshop.baseline_version);
+    const versionResponse = await coreRequest(`/expertise/versions/${pausedWorkshop.best_version}`);
+    assert.equal(versionResponse.evaluation.integrity.defective_vertices, 0);
+    assert.equal(versionResponse.evaluation.deformation.available, false); // No invented bind-space/pose data.
+    console.log("V31_PACKAGED_IMPROVEMENT_CHECKPOINT_AND_HONEST_EVIDENCE ok");
+    const training = await coreRequest("/expertise/training", { max_exercises: 2, candidates_per_exercise: 4 });
+    const pausedTraining = await coreRequest(`/expertise/training/${training.id}/run`, {});
+    assert.equal(pausedTraining.status, "paused");
+    const practice = (await coreRequest(`/expertise/training/${training.id}/exercises`)).exercises[0];
+    assert.equal(practice.synthetic, true);
+    const bestPractice = await coreRequest(`/expertise/training/${training.id}/artifacts/${practice.id}`);
+    assert.equal(bestPractice.metadata.synthetic, true);
+    assert.equal((await coreRequest(`/expertise/training/${training.id}/dataset`)).record_count, 0);
+    assert.ok((await coreRequest(`/expertise/training/${training.id}/dataset?include_synthetic=true`)).record_count > 0);
+    console.log("SELF_TRAINING_PACKAGED_HEADLESS_API_AND_SYNTHETIC_BOUNDARY ok");
+    const production = await coreRequest("/expertise/production", { design: { hud: true } });
+    const numericProduction = await coreRequest(`/expertise/production/${production.id}/numeric`, {});
+    assert.equal(numericProduction.status, "numeric_ready");
+    assert.equal(numericProduction.best.evaluation.passed, true);
+    assert.equal(numericProduction.best.evaluation.visual_fidelity, "unmeasured");
+    const productionBest = await coreRequest(`/expertise/production/${production.id}/best`);
+    assert.equal(productionBest.metadata.synthetic, true);
+    assert.equal(productionBest.joints.length, 57);
+    assert.ok(productionBest.meshes.some(m => m.id === "body-neck"));
+    for (const name of ["character.build", "character.practice_production", "character.production_control"]) {
+      assert.equal(specialistTools.tools.find(t => t.name === name).risk, "confirm");
+    }
+    assert.ok(fs.existsSync(path.join(path.dirname(executablePath), "resources", "agent", "akashi_agent", "blender_production.py")));
+    console.log("PRODUCTION_PACKAGED_NUMERIC_CORRECTION_AND_FIXED_DCC_RESOURCES ok");
 
     const second = spawn(executablePath, [`--user-data-dir=${userData}`], {
       env, windowsHide: true, shell: false, stdio: "ignore",
@@ -105,6 +165,49 @@ function processAlive(pid) {
     const agentHealth = await page.evaluate(() => window.akashiDesktop.agent.status());
     assert.equal(agentHealth.status, "ok");
     console.log(`AGENT_RECOVERED old=${originalAgentPid} new=${state.components.agent.pid}`);
+
+    // Synthetic checkpoint fixture; no autonomous/model task is executed here.
+    const checkpointPath = path.join(userData, "runtime", "core", "private", "autonomy_tasks.json");
+    const checkpoints = JSON.parse(fs.readFileSync(checkpointPath, "utf8"));
+    checkpoints.tasks["operator-synthetic-checkpoint"] = {
+      id: "operator-synthetic-checkpoint", session_id: "synthetic", goal: "synthetic checkpoint fixture",
+      title: "Synthetic restart fixture", status: "running", revision: 0, updated_at: new Date().toISOString(),
+      subgoals: [{ id: "done", status: "completed" }, { id: "inflight", status: "running" }],
+      artifacts: [], entities: {}, events: [], synthetic: true,
+    };
+    fs.writeFileSync(checkpointPath, JSON.stringify(checkpoints));
+    const beforeRestart = state.components.core.pid;
+    await application.evaluate((_electron, pid) => process.kill(pid), beforeRestart);
+    state = await waitForValue(() => page.evaluate(() => window.akashiDesktop.runtime.status()),
+      (current) => current.components.core.state === "READY" && current.components.core.pid !== beforeRestart,
+      "packaged Core checkpoint recovery");
+    const checkpointResponse = await page.evaluate(() => window.akashiDesktop.api.fetch({
+      path: "/autonomy/tasks/operator-synthetic-checkpoint", method: "GET", headers: {}, body: { kind: "none" }, authenticated: true,
+    }));
+    assert.equal(checkpointResponse.status, 200);
+    const recoveredCheckpoint = JSON.parse(Buffer.from(checkpointResponse.body, "base64").toString("utf8"));
+    assert.equal(recoveredCheckpoint.status, "paused_recovery");
+    assert.equal(recoveredCheckpoint.subgoals[0].status, "completed");
+    assert.equal(recoveredCheckpoint.subgoals[1].status, "pending");
+    console.log("V2_SYNTHETIC_CHECKPOINT_SURVIVES_CORE_RESTART ok");
+    const recoveredWorkshop = await coreRequest(`/expertise/workshops/${workshop.id}`);
+    assert.equal(recoveredWorkshop.best_version, pausedWorkshop.best_version);
+    assert.equal(recoveredWorkshop.attempts, 1);
+    const durableVersion = await coreRequest(`/expertise/versions/${recoveredWorkshop.best_version}`);
+    assert.equal(durableVersion.document.skins[0].weights[0].bone, 1);
+    console.log("V31_BEST_VERSION_AND_WEIGHTS_SURVIVE_ACTUAL_CORE_RESTART ok");
+    const recoveredTraining = await coreRequest(`/expertise/training/${training.id}`);
+    assert.equal(recoveredTraining.status, "paused");
+    assert.equal(recoveredTraining.completed_exercises, 1);
+    const durablePractice = (await coreRequest(`/expertise/training/${training.id}/exercises`)).exercises[0];
+    assert.equal(durablePractice.best_digest, practice.best_digest);
+    assert.deepEqual(await coreRequest(`/expertise/training/${training.id}/artifacts/${practice.id}`), bestPractice);
+    console.log("SELF_TRAINING_IMMUTABLE_BEST_AND_NO_AUTO_RESUME_AFTER_CORE_RESTART ok");
+    const durableProduction = (await coreRequest(`/expertise/production/${production.id}`)).job;
+    assert.equal(durableProduction.status, "numeric_ready");
+    assert.equal(durableProduction.best.document_digest, numericProduction.best.document_digest);
+    assert.deepEqual(await coreRequest(`/expertise/production/${production.id}/best`), productionBest);
+    console.log("PRODUCTION_BEST_SURVIVES_CORE_RESTART_WITH_NO_AUTO_DCC_RUN ok");
 
     const owned = [state.components.core.pid, state.components.agent.pid];
     await application.close();

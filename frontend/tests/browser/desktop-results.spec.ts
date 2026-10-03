@@ -5,6 +5,15 @@ test("desktop decisions use research data; only explicit source click opens the 
   await page.addInitScript(() => {
     const state = window as typeof window & { __opened: string[]; __requests: string[] };
     state.__opened = []; state.__requests = [];
+    // The desktop bridge transports response bodies as base64 of UTF-8 BYTES.
+    // btoa() alone encodes UTF-16 code units and throws on any non-Latin-1
+    // character, which this fixture's Turkish payloads contain.
+    const encodeBody = (value: unknown) => {
+      const bytes = new TextEncoder().encode(JSON.stringify(value));
+      let binary = "";
+      for (const byte of bytes) binary += String.fromCharCode(byte);
+      return btoa(binary);
+    };
     const runtime = { overall: "READY", coreMode: "local", components: Object.fromEntries(["core", "agent", "voice", "ollama", "comfyui"].map(name => [name, { state: "READY" }])) };
     window.akashiDesktop = {
       platform: "win32", config: { load: async () => ({ baseUrl: "https://api.example.test", tokenStored: true }) },
@@ -25,7 +34,7 @@ test("desktop decisions use research data; only explicit source click opens the 
         if (request.path.startsWith("/intelligence/")) value = [];
         if (request.path === "/research") value = { question: "GPU video araştır", mode: "normal", provider: "test-fixture", status: "completed", synthesis_status: "source-only", summary: "Fixture source metadata, not a playable clip.", findings: [], sources: [{ title: "Source preview", url: "https://example.test/video", snippet: "Preview text", provider: "test-fixture", relevance: 1 }] };
         if (request.path.startsWith("/events/recent")) value = { cursor: 1, instance: "fixture", events: request.path.endsWith("after=0") ? [{ id: 1, timestamp: new Date().toISOString(), type: "research.progress", data: { state: "completed", source_count: 1 } }] : [] };
-        return { status: 200, headers: { "content-type": "application/json" }, body: btoa(JSON.stringify(value)) };
+        return { status: 200, headers: { "content-type": "application/json" }, body: encodeBody(value) };
       } },
     } as unknown as Window["akashiDesktop"];
   });

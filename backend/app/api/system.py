@@ -66,6 +66,7 @@ async def capabilities(core: AkashiCore = Depends(get_core)) -> Dict[str, Any]:
             "devices": True,
             "events": "sse",
             "live_core": True,
+            "phone": core.phone.status(),
         },
         "live_actions": core.live.registry.definitions(),
     }

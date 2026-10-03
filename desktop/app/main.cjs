@@ -36,10 +36,18 @@ const LOCAL_AGENT_ACTIONS = new Set([
   "get_system_status", "list_processes", "application_status", "list_directory",
   "find_file", "file_metadata", "launch_application", "open_project", "reveal_file",
   "take_screenshot", "capture_camera_frame", "run_project_script",
+  "get_desktop_state", "window_control", "computer_input", "read_text_file",
+  "file_operation",
+  "inspect_git",
+  "browser_status", "browser_tabs", "browser_snapshot", "browser_start", "browser_action",
+  "blender_operation",
 ]);
 const LOCAL_CONFIRM_ACTIONS = new Set([
   "launch_application", "open_project", "reveal_file", "take_screenshot",
   "capture_camera_frame", "run_project_script",
+  "window_control", "computer_input", "file_operation",
+  "browser_start", "browser_action",
+  "blender_operation",
 ]);
 const DATA_FILE = "connection.secure";
 const RUNTIME_SECRET_FILE = "runtime.secure";
@@ -182,6 +190,7 @@ const command = !app.isPackaged && fs.existsSync(devPython)
     core_token: backendConfig.token || "",
     voice_name: "Charon",
     language: options && typeof options.language === "string" ? options.language : "auto",
+    session_id: (options && options.sessionId) || "",
     identity: persona.identity,
     voice_style: persona.voice_style,
   };

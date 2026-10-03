@@ -43,7 +43,13 @@ function validateVoiceOptions(value) {
   const language = ["auto", "tr", "en"].includes(value?.language) ? value.language : "auto";
   const model = ["tiny", "base", "small"].includes(value?.model) ? value.model : "base";
   const bargeIn = value?.bargeIn === true;
-  return { language, model, bargeIn };
+  // Renderer-supplied conversation id, so a voice turn that consults Core lands
+  // in the same conversation as the typed chat. An unusable value degrades to
+  // "", which makes the worker fall back to its own generated id.
+  const sessionId = typeof value?.sessionId === "string" && /^[A-Za-z0-9._:-]{8,128}$/u.test(value.sessionId)
+    ? value.sessionId
+    : "";
+  return { language, model, bargeIn, sessionId };
 }
 
 module.exports = { validateSender, validateApiPath, readBoundedBody, validateVoiceOptions };

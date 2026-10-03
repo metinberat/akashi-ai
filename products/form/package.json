@@ -1,0 +1,33 @@
+{
+  "name": "form-character-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Independent AI character production workspace",
+  "author": "FORM Studio",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "start": "npm run build && electron .",
+    "pack:win": "npm run build && electron-builder --win --dir",
+    "dist:win": "npm run build && electron-builder --win nsis",
+    "test": "node --test tests/security.test.cjs",
+    "check": "node --check web/app.js && node --check web/viewer.js && node --check desktop/main.cjs"
+  },
+  "dependencies": { "three": "0.183.2" },
+  "devDependencies": { "esbuild": "0.28.2", "electron": "44.4.1", "electron-builder": "26.15.3" },
+  "build": {
+    "appId": "studio.form.character",
+    "productName": "FORM Character Studio",
+    "asar": true,
+    "directories": { "output": "dist" },
+    "files": ["desktop/**/*.cjs", "web-dist/**/*", "package.json"],
+    "extraResources": [
+      { "from": "web-dist", "to": "web" },
+      { "from": "server", "to": "server", "filter": ["**/*.py"] },
+      { "from": "../../backend/app", "to": "engine/app", "filter": ["__init__.py", "expertise/**/*.py", "memory/**/*.py", "autonomy/__init__.py", "autonomy/knowledge.py", "providers/**/*.py", "core/__init__.py", "core/intent.py"] },
+      { "from": "../../desktop/agent/akashi_agent", "to": "dcc/akashi_agent", "filter": ["**/*.py"] }
+    ],
+    "win": { "target": [{"target": "nsis", "arch": ["x64"]}] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  }
+}

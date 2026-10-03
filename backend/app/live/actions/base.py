@@ -2,13 +2,17 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import re
 import unicodedata
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from app.core.brain import AkashiBrain, BrainResponse
 from app.core.config import Settings
 from app.core.model_router import ModelRouter
 from app.live.desktop import DesktopActionGateway
 from app.live.models import ActionMatch, LiveActionDefinition
+
+if TYPE_CHECKING:
+    from app.autonomy.engine import LongHorizonTaskEngine
+    from app.computer.service import ComputerAgentService
 
 
 def normalize_text(value: str) -> str:
@@ -37,6 +41,8 @@ class LiveActionRuntime:
     desktop: DesktopActionGateway
     brain: AkashiBrain
     model_router: ModelRouter
+    computer: Optional["ComputerAgentService"] = None
+    autonomy: Optional["LongHorizonTaskEngine"] = None
 
 
 class LiveAction(ABC):

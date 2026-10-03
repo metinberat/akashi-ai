@@ -74,6 +74,8 @@ class LiveActionTests(unittest.IsolatedAsyncioTestCase):
                 "system.status",
                 "vision.camera",
                 "vision.screen",
+                "computer.goal",
+                "autonomy.goal",
             },
         )
         for definition in definitions.values():
@@ -89,6 +91,9 @@ class LiveActionTests(unittest.IsolatedAsyncioTestCase):
             "AKASHI projesini aç.": "project.open_akashi",
             "Ekranıma bak ve ne gördüğünü söyle.": "vision.screen",
             "Look through the camera.": "vision.camera",
+            "Open Discord, find the project page, then return to VS Code.": "computer.goal",
+            "Look at the screen and click the visible Continue button.": "computer.goal",
+            "Inspect the references, modify the asset, build it, test it, then verify and finish the entire objective.": "autonomy.goal",
         }
         for message, expected in fixtures.items():
             selected = self.registry.select(message)

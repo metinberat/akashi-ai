@@ -28,6 +28,11 @@ class CoreApiTests(unittest.TestCase):
             device_file=root / "devices.json",
             intelligence_file=root / "intelligence.json",
             schedule_file=root / "schedules.json",
+            phone_calls_file=root / "phone-calls.json",
+            autonomy_state_file=root / "autonomy.json",
+            autonomy_knowledge_file=root / "knowledge.json",
+            autonomy_skill_file=root / "skills.json",
+            expertise_db=root / "expertise.sqlite3",
         )
         self.core = AkashiCore(self.settings)
         app.dependency_overrides[get_core] = lambda: self.core
@@ -113,13 +118,13 @@ class CoreApiTests(unittest.TestCase):
 
     def test_openapi_contains_old_and_new_routes(self) -> None:
         paths = self.client.get("/openapi.json").json()["paths"]
-        for path in ("/health", "/chat", "/image/fast-test", "/memory", "/research", "/tasks", "/devices", "/intelligence/items", "/voice/sessions"):
+        for path in ("/health", "/chat", "/image/fast-test", "/memory", "/research", "/tasks", "/devices", "/intelligence/items", "/voice/sessions", "/computer/tasks", "/autonomy/tasks"):
             self.assertIn(path, paths)
 
     def test_body_limit_and_new_routes_fail_closed(self) -> None:
         response = self.client.post("/chat", content=b"{}", headers={"Content-Length": "999999999"})
         self.assertEqual(response.status_code, 413)
-        for path in ("/memory", "/files", "/tasks", "/devices", "/tools", "/system/capabilities", "/system/health", "/events/stream", "/live/actions", "/intelligence/items", "/voice/sessions/unknown"):
+        for path in ("/memory", "/files", "/tasks", "/devices", "/tools", "/system/capabilities", "/system/health", "/events/stream", "/live/actions", "/intelligence/items", "/voice/sessions/unknown", "/computer/tasks", "/autonomy/tasks"):
             self.assertEqual(self.client.get(path).status_code, 401, path)
 
     def test_live_interaction_ids_are_validated(self) -> None:

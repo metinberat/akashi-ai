@@ -781,7 +781,7 @@ export default function Home() {
     if (liveVoiceActiveRef.current) return;
     setVoiceError("");
     try {
-      await startLiveVoice(voiceLanguage);
+      await startLiveVoice(voiceLanguage, sessionRef.current);
       liveVoiceActiveRef.current = true;
       fullVoiceRef.current = true;
       setFullVoiceActive(true);
@@ -1337,9 +1337,9 @@ export default function Home() {
   ) : activeView === "devices" ? (
     <DevicesPanel config={config} connected={backendOnline} />
   ) : activeView === "autonomy" ? (
-    <AutonomyHub />
+    <AutonomyHub config={config} connected={backendOnline} />
   ) : activeView === "more" ? (
-    <MorePanel presentation={presentation} moodPreference={moodPreference} connected={backendOnline} systemHealth={systemHealth} maintenance={maintenance} onMoodPreference={updateMoodPreference} onNavigate={navigate} onSettings={() => setSettingsOpen(true)} />
+    <MorePanel config={config} presentation={presentation} moodPreference={moodPreference} connected={backendOnline} systemHealth={systemHealth} maintenance={maintenance} onMoodPreference={updateMoodPreference} onNavigate={navigate} onSettings={() => setSettingsOpen(true)} />
   ) : null;
 
   const desktopCommandStrip = <>
@@ -1752,7 +1752,7 @@ export default function Home() {
             {activeView === "tasks" && <TasksPanel config={config} connected={backendOnline} />}
             {activeView === "files" && <FilesPanel config={config} connected={backendOnline} onUseInChat={(file) => { setContextFile(file); setMode("chat"); setActiveView("chat"); }} />}
             {activeView === "devices" && <DevicesPanel config={config} connected={backendOnline} />}
-            {activeView === "more" && <MorePanel presentation={presentation} moodPreference={moodPreference} connected={backendOnline} systemHealth={systemHealth} maintenance={maintenance} onMoodPreference={updateMoodPreference} onNavigate={navigate} onSettings={() => setSettingsOpen(true)} />}
+            {activeView === "more" && <MorePanel config={config} presentation={presentation} moodPreference={moodPreference} connected={backendOnline} systemHealth={systemHealth} maintenance={maintenance} onMoodPreference={updateMoodPreference} onNavigate={navigate} onSettings={() => setSettingsOpen(true)} />}
           </div>
         )}
       </section>

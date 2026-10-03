@@ -54,7 +54,12 @@ class Settings:
     intelligence_file: Path = BACKEND_DIR / "data" / "private" / "intelligence.json"
     schedule_file: Path = BACKEND_DIR / "data" / "private" / "schedules.json"
     live_state_file: Path = BACKEND_DIR / "data" / "private" / "live_interactions.json"
+    computer_state_file: Path = BACKEND_DIR / "data" / "private" / "computer_sessions.json"
+    autonomy_state_file: Path = BACKEND_DIR / "data" / "private" / "autonomy_tasks.json"
+    autonomy_skill_file: Path = BACKEND_DIR / "data" / "private" / "autonomy_skills.json"
+    autonomy_knowledge_file: Path = BACKEND_DIR / "data" / "private" / "autonomy_knowledge.json"
     voice_state_file: Path = BACKEND_DIR / "data" / "private" / "voice_sessions.json"
+    phone_calls_file: Path = BACKEND_DIR / "data" / "private" / "phone_calls.json"
     max_upload_bytes: int = 10 * 1024 * 1024
 
     research_provider: str = "duckduckgo"
@@ -84,6 +89,28 @@ class Settings:
     local_agent_token: Optional[str] = None
     local_agent_timeout_seconds: float = 150.0
     akashi_project_path: Optional[Path] = None
+    computer_max_steps: int = 12
+    autonomy_max_subgoals: int = 40
+    autonomy_local_fallback: bool = True
+    expertise_db: Path = BACKEND_DIR / "data" / "private" / "expertise.sqlite3"
+
+    phone_enabled: bool = False
+    outbound_calls_enabled: bool = False
+    livekit_url: Optional[str] = None
+    livekit_api_key: Optional[str] = None
+    livekit_api_secret: Optional[str] = None
+    livekit_sip_outbound_trunk_id: Optional[str] = None
+    phone_agent_name: str = "akashi-phone"
+    phone_worker_token: Optional[str] = None
+    phone_core_url: str = "http://127.0.0.1:8000"
+    phone_stt_model: str = "cartesia/ink-whisper"
+    phone_stt_language: str = "tr"
+    phone_tts_model: str = "cartesia/sonic-3"
+    phone_tts_voice: Optional[str] = None
+    phone_tts_language: str = "tr"
+    verimor_sip_server: str = "sip.verimor.com.tr"
+    verimor_sip_username: Optional[str] = None
+    verimor_sip_password: Optional[str] = None
 
 
 @lru_cache
@@ -177,7 +204,12 @@ def get_settings() -> Settings:
         intelligence_file=data_path("INTELLIGENCE_FILE", "private/intelligence.json"),
         schedule_file=data_path("SCHEDULE_FILE", "private/schedules.json"),
         live_state_file=data_path("LIVE_STATE_FILE", "private/live_interactions.json"),
+        computer_state_file=data_path("COMPUTER_STATE_FILE", "private/computer_sessions.json"),
+        autonomy_state_file=data_path("AUTONOMY_STATE_FILE", "private/autonomy_tasks.json"),
+        autonomy_skill_file=data_path("AUTONOMY_SKILL_FILE", "private/autonomy_skills.json"),
+        autonomy_knowledge_file=data_path("AUTONOMY_KNOWLEDGE_FILE", "private/autonomy_knowledge.json"),
         voice_state_file=data_path("VOICE_STATE_FILE", "private/voice_sessions.json"),
+        phone_calls_file=data_path("PHONE_CALLS_FILE", "private/phone_calls.json"),
         max_upload_bytes=int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024))),
         research_provider=os.getenv("RESEARCH_PROVIDER", "duckduckgo").strip().lower(),
         wikipedia_language=os.getenv("WIKIPEDIA_LANGUAGE", "en").strip().lower(),
@@ -203,4 +235,25 @@ def get_settings() -> Settings:
         local_agent_token=(os.getenv("AKASHI_AGENT_TOKEN") or "").strip() or None,
         local_agent_timeout_seconds=float(os.getenv("AKASHI_AGENT_TIMEOUT", "150")),
         akashi_project_path=project_path,
+        computer_max_steps=max(1, min(int(os.getenv("AKASHI_COMPUTER_MAX_STEPS", "12")), 30)),
+        autonomy_max_subgoals=max(5, min(int(os.getenv("AKASHI_AUTONOMY_MAX_SUBGOALS", "40")), 100)),
+        autonomy_local_fallback=os.getenv("AKASHI_AUTONOMY_LOCAL_FALLBACK", "true").lower() == "true",
+        expertise_db=data_path("EXPERTISE_DB", "private/expertise.sqlite3"),
+        phone_enabled=os.getenv("AKASHI_PHONE_ENABLED", "false").strip().casefold() in {"1", "true", "yes", "on"},
+        outbound_calls_enabled=os.getenv("AKASHI_OUTBOUND_CALLS_ENABLED", "false").strip().casefold() in {"1", "true", "yes", "on"},
+        livekit_url=(os.getenv("LIVEKIT_URL") or "").strip().rstrip("/") or None,
+        livekit_api_key=(os.getenv("LIVEKIT_API_KEY") or "").strip() or None,
+        livekit_api_secret=(os.getenv("LIVEKIT_API_SECRET") or "").strip() or None,
+        livekit_sip_outbound_trunk_id=(os.getenv("LIVEKIT_SIP_OUTBOUND_TRUNK_ID") or "").strip() or None,
+        phone_agent_name=os.getenv("AKASHI_PHONE_AGENT_NAME", "akashi-phone").strip() or "akashi-phone",
+        phone_worker_token=(os.getenv("AKASHI_PHONE_WORKER_TOKEN") or "").strip() or None,
+        phone_core_url=os.getenv("AKASHI_PHONE_CORE_URL", "http://127.0.0.1:8000").strip().rstrip("/"),
+        phone_stt_model=os.getenv("AKASHI_PHONE_STT_MODEL", "cartesia/ink-whisper").strip(),
+        phone_stt_language=os.getenv("AKASHI_PHONE_STT_LANGUAGE", "tr").strip() or "tr",
+        phone_tts_model=os.getenv("AKASHI_PHONE_TTS_MODEL", "cartesia/sonic-3").strip(),
+        phone_tts_voice=(os.getenv("AKASHI_PHONE_TTS_VOICE") or "").strip() or None,
+        phone_tts_language=os.getenv("AKASHI_PHONE_TTS_LANGUAGE", "tr").strip() or "tr",
+        verimor_sip_server=os.getenv("VERIMOR_SIP_SERVER", "sip.verimor.com.tr").strip(),
+        verimor_sip_username=(os.getenv("VERIMOR_SIP_USERNAME") or "").strip() or None,
+        verimor_sip_password=(os.getenv("VERIMOR_SIP_PASSWORD") or "").strip() or None,
     )

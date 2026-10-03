@@ -29,15 +29,20 @@ async function waitFor(predicate, label, timeoutMs = 30_000) {
 }
 
 async function api(baseUrl, token, route, options = {}) {
-  const response = await fetch(`${baseUrl}${route}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    signal: AbortSignal.timeout(15_000),
-  });
+  let response;
+  try {
+    response = await fetch(`${baseUrl}${route}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch (error) {
+    throw new Error(`${route} request failed: ${error?.name || "network_error"}`, { cause: error });
+  }
   const body = response.status === 204 ? null : await response.json();
   if (!response.ok) throw new Error(`${route} failed (${response.status}): ${JSON.stringify(body)}`);
   return body;
@@ -65,6 +70,7 @@ async function api(baseUrl, token, route, options = {}) {
     appDirectory: path.resolve(__dirname, ".."),
     isPackaged,
     getConnectionConfig: () => ({ coreMode: "local", baseUrl, token }),
+    getProviderEnv: () => ({ aiProvider: "mock", geminiApiKey: "", geminiModel: "" }),
     getAgentToken: () => agentToken,
     probeVoice: async () => ({ ok: true }),
   };

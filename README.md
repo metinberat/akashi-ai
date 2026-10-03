@@ -4,6 +4,12 @@ AKASHI is one shared AI interface for Web, Android, iOS, and Windows Desktop.
 FastAPI is the central orchestration boundary: clients never connect directly to
 Ollama, Gemini, ComfyUI, search providers, or the Windows Agent.
 
+One deliberate exception: the Windows Desktop always-on voice path opens a
+Gemini Live native-audio session directly from the Electron shell, because
+routing a bidirectional audio stream through Core would add the very latency the
+path exists to remove. It still hands every tool, research, memory or system
+request back to Core over `/chat`; only the conversational audio is direct.
+
 ## Repository map
 
 - `backend/` — FastAPI Core, providers, chat/images, Memory V2, research,
@@ -21,3 +27,10 @@ New system capabilities are additive under `/memory`, `/research`, `/tools`,
 
 Start with [Development](docs/development.md), then review the
 [Architecture](docs/architecture.md) and [Security model](docs/security.md).
+
+Character expertise is a separate domain: [V3 ingestion](docs/character-expertise-v3.md)
+and [V3.1 non-destructive Character Workshop](docs/character-workshop-v31.md).
+The workshop applies typed modifications, compares measured variants, preserves
+the best checkpoint and can verify saved Blender weights/deformation through the
+controlled Windows Agent. Current physical validation uses synthetic assets only;
+numerical tests are not professional or artistic quality certification.
