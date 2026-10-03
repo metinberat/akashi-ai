@@ -93,6 +93,10 @@ class Settings:
     autonomy_max_subgoals: int = 40
     autonomy_local_fallback: bool = True
     expertise_db: Path = BACKEND_DIR / "data" / "private" / "expertise.sqlite3"
+    # Spatial Lab: scene sessions/assets under private data; FORM is read-only.
+    spatial_dir: Path = BACKEND_DIR / "data" / "private" / "spatial"
+    spatial_form_data_dir: Optional[Path] = None
+    spatial_interpreter: str = "auto"
 
     phone_enabled: bool = False
     outbound_calls_enabled: bool = False
@@ -239,6 +243,10 @@ def get_settings() -> Settings:
         autonomy_max_subgoals=max(5, min(int(os.getenv("AKASHI_AUTONOMY_MAX_SUBGOALS", "40")), 100)),
         autonomy_local_fallback=os.getenv("AKASHI_AUTONOMY_LOCAL_FALLBACK", "true").lower() == "true",
         expertise_db=data_path("EXPERTISE_DB", "private/expertise.sqlite3"),
+        spatial_dir=data_path("SPATIAL_DIR", "private/spatial"),
+        spatial_form_data_dir=(Path(os.environ["AKASHI_FORM_DATA_DIR"].strip()).expanduser().resolve()
+                               if (os.getenv("AKASHI_FORM_DATA_DIR") or "").strip() else None),
+        spatial_interpreter="rules" if os.getenv("AKASHI_SPATIAL_INTERPRETER", "auto").strip().lower() == "rules" else "auto",
         phone_enabled=os.getenv("AKASHI_PHONE_ENABLED", "false").strip().casefold() in {"1", "true", "yes", "on"},
         outbound_calls_enabled=os.getenv("AKASHI_OUTBOUND_CALLS_ENABLED", "false").strip().casefold() in {"1", "true", "yes", "on"},
         livekit_url=(os.getenv("LIVEKIT_URL") or "").strip().rstrip("/") or None,

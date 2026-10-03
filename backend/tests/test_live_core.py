@@ -76,6 +76,7 @@ class LiveActionTests(unittest.IsolatedAsyncioTestCase):
                 "vision.screen",
                 "computer.goal",
                 "autonomy.goal",
+                "spatial.scene",
             },
         )
         for definition in definitions.values():

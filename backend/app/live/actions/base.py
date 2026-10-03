@@ -13,6 +13,7 @@ from app.live.models import ActionMatch, LiveActionDefinition
 if TYPE_CHECKING:
     from app.autonomy.engine import LongHorizonTaskEngine
     from app.computer.service import ComputerAgentService
+    from app.spatial.service import SpatialLabService
 
 
 def normalize_text(value: str) -> str:
@@ -43,6 +44,7 @@ class LiveActionRuntime:
     model_router: ModelRouter
     computer: Optional["ComputerAgentService"] = None
     autonomy: Optional["LongHorizonTaskEngine"] = None
+    spatial: Optional["SpatialLabService"] = None
 
 
 class LiveAction(ABC):

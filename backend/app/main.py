@@ -22,6 +22,7 @@ from app.api.phone import worker_router as phone_worker_router
 from app.api.research import router as research_router
 from app.api.system import router as system_router
 from app.api.live import router as live_router
+from app.api.spatial import router as spatial_router
 from app.api.tasks import router as task_router
 from app.api.tools import router as tool_router
 from app.api.voice import router as voice_router
@@ -94,6 +95,7 @@ app.include_router(device_router)
 app.include_router(event_router)
 app.include_router(system_router)
 app.include_router(live_router)
+app.include_router(spatial_router)
 app.include_router(intelligence_router)
 app.include_router(voice_router)
 app.include_router(phone_router)

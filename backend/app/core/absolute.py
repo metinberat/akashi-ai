@@ -41,6 +41,8 @@ from app.live.store import JSONInteractionStore
 from app.research.providers import SearxNGResearchProvider, WikipediaResearchProvider, DuckDuckGoResearchProvider
 from app.research.base import ResearchSource
 from app.research.service import ResearchService
+from app.spatial.service import SpatialLabService
+from app.spatial.tools import spatial_tools
 from app.tasks.engine import TaskEngine
 from app.tasks.store import JSONTaskStore
 from app.tools.builtin import (
@@ -161,6 +163,15 @@ class AkashiCore:
                      TrainingControlTool(self.expertise), ApplyLearnedMethodTool(self.expertise)):
             self.tools.register(tool)
         self.autonomy_knowledge.expert_search = self.expertise.retrieve
+        self.spatial = SpatialLabService(
+            settings.spatial_dir,
+            form_data_dir=settings.spatial_form_data_dir,
+            events=event_hub,
+            model_provider=lambda: self.model_router.provider_for("fast"),
+            interpreter=settings.spatial_interpreter,
+        )
+        for tool in spatial_tools(self.spatial):
+            self.tools.register(tool)
         self.autonomy = LongHorizonTaskEngine(
             JSONAutonomyStore(settings.autonomy_state_file),
             self.computer,
@@ -180,6 +191,7 @@ class AkashiCore:
                 model_router=self.model_router,
                 computer=self.computer,
                 autonomy=self.autonomy,
+                spatial=self.spatial,
             ),
             event_hub,
             JSONInteractionStore(settings.live_state_file),
