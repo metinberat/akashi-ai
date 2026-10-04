@@ -67,7 +67,10 @@ for (const { photo, expected, delegate } of RUNS) {
       await expect(page.locator(".spatial-stage")).toHaveAttribute("data-camera", "true");
       await page.getByRole("button", { name: "Debug" }).click();
       await page.getByRole("button", { name: "Record hands" }).click();
-      await page.waitForTimeout(4000);
+      // Record a fixed number of frames, not a fixed wall time: the first GPU
+      // run in a fresh browser pays shader warm-up on software GL.
+      const counter = page.locator("[data-recorded-frames]");
+      await expect.poll(async () => Number(await counter.getAttribute("data-recorded-frames")), { timeout: 60_000 }).toBeGreaterThanOrEqual(12);
       const debugText = await page.getByRole("region", { name: "Spatial debug" }).innerText();
       const download = page.waitForEvent("download");
       await page.getByRole("button", { name: "Stop & save recording" }).click();

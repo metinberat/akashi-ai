@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import { defineConfig } from "@playwright/test";
 
 // Spatial Lab integration suite: the real static UI against a real AKASHI Core
@@ -7,7 +9,8 @@ import { defineConfig } from "@playwright/test";
 // and `npm run build`. Network is needed once to fetch the pinned photos.
 // CHROMIUM_PATH can point at a preinstalled Chromium when Playwright's own
 // browser revision is unavailable.
-const python = process.env.SPATIAL_E2E_PYTHON || (process.platform === "win32" ? "../backend/.venv/Scripts/python.exe" : "../backend/.venv/bin/python");
+// Absolute and quoted: cmd.exe cannot run an unquoted "../x/y.exe" path.
+const python = process.env.SPATIAL_E2E_PYTHON || path.resolve(process.platform === "win32" ? "../backend/.venv/Scripts/python.exe" : "../backend/.venv/bin/python");
 
 export default defineConfig({
   testDir: "./tests/spatial-e2e",
@@ -23,6 +26,6 @@ export default defineConfig({
   },
   webServer: [
     { command: "npx serve out -l 3101", url: "http://localhost:3101", reuseExistingServer: false },
-    { command: `${python} tests/spatial-e2e/backend.py`, url: "http://127.0.0.1:8017/health", reuseExistingServer: false, timeout: 60_000 },
+    { command: `"${python}" tests/spatial-e2e/backend.py`, url: "http://127.0.0.1:8017/health", reuseExistingServer: false, timeout: 60_000 },
   ],
 });

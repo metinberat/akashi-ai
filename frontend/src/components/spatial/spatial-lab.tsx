@@ -76,6 +76,7 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
   const [assetErrors, setAssetErrors] = useState<Record<string, string>>({});
   const [aspect, setAspect] = useState(16 / 9);
   const [recording, setRecording] = useState<number | null>(null);
+  const [recordedFrames, setRecordedFrames] = useState<number | null>(null);
   const [providerLabel, setProviderLabel] = useState("none");
   // GPU vs CPU inference matters under GPU contention (local models, Blender); tuned locally.
   const [delegate, setDelegate] = useState<"GPU" | "CPU">(() => readStorage(DELEGATE_KEY, { value: "GPU" as "GPU" | "CPU" }).value);
@@ -169,6 +170,7 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
     runtime.attachRenderer(renderer);
     const stats = window.setInterval(() => {
       setRendererStats(renderer.stats());
+      setRecordedFrames(runtime.recordedFrames);
       const selectedId = store.view()?.selection[0];
       const size = selectedId ? renderer.measuredSize(selectedId) : null;
       setMeasured(size ? [size.x, size.y, size.z] : null);
@@ -352,6 +354,7 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
               link.click();
               window.setTimeout(() => URL.revokeObjectURL(url), 5000);
             }}>Stop & save recording</button>}
+          {recording !== null && <small className="spatial-muted" data-recorded-frames={recordedFrames ?? 0}>{recordedFrames ?? 0} frames</small>}
         </div>
       </section>}
     </aside>

@@ -168,6 +168,11 @@ export class SpatialInputRuntime {
     return this.recorder !== null;
   }
 
+  /** Frames captured so far, or null when not recording. */
+  get recordedFrames(): number | null {
+    return this.recorder?.size ?? null;
+  }
+
   stopRecording(): HandRecording | null {
     const recorder = this.recorder;
     this.recorder = null;
