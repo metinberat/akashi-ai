@@ -76,7 +76,8 @@ export function spatialApi(config: BackendConfig): SpatialApi {
     beginLease: (id, objectId) => json(config, `/spatial/sessions/${enc(id)}/leases`, post({ object_id: objectId, origin: "gesture" })),
     renewLease: (id, leaseId) => json(config, `/spatial/sessions/${enc(id)}/leases/${enc(leaseId)}/renew`, { method: "POST" }),
     endLease: (id, leaseId) => json(config, `/spatial/sessions/${enc(id)}/leases/${enc(leaseId)}`, { method: "DELETE" }),
-    presence: (id, anchors) => json(config, `/spatial/sessions/${enc(id)}/presence`, { method: "PUT", body: JSON.stringify({ anchors }) }),
+    // POST, not PUT: the desktop IPC proxy and Core CORS deliberately allow only GET/POST/PATCH/DELETE.
+    presence: (id, anchors) => json(config, `/spatial/sessions/${enc(id)}/presence`, post({ anchors })),
     events: (id, after = 0) => json(config, `/spatial/sessions/${enc(id)}/events?after=${after}&limit=500`),
     verifyReplay: (id) => json(config, `/spatial/sessions/${enc(id)}/replay/verify`, { method: "POST" }),
     metrics: () => json(config, "/spatial/metrics"),

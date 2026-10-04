@@ -375,6 +375,7 @@ class DesktopRuntimeSupervisor extends EventEmitter {
         "AKASHI_MODEL_FAST_NAME", "AKASHI_MODEL_QUALITY_NAME",
         "AKASHI_MODEL_REASONING_NAME", "AKASHI_MODEL_VISION_NAME",
         "MISS_MINUTES_ENABLED", "MISS_MINUTES_TIMEZONE", "AKASHI_PROJECT_PATH",
+        "AKASHI_FORM_DATA_DIR", "AKASHI_SPATIAL_INTERPRETER",
       ];
       for (const name of allowed) if (process.env[name]) inherited[name] = process.env[name];
       // AI_PROVIDER/GEMINI_API_KEY/GEMINI_MODEL never come from process.env: a packaged app has no

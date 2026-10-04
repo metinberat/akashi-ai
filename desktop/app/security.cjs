@@ -52,4 +52,33 @@ function validateVoiceOptions(value) {
   return { language, model, bargeIn, sessionId };
 }
 
-module.exports = { validateSender, validateApiPath, readBoundedBody, validateVoiceOptions };
+const APP_ORIGIN = "akashi://app";
+
+function originOf(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return "";
+  }
+}
+
+// Spatial Lab hand tracking needs the camera. Grant exactly that: a video-only
+// media request from the AKASHI app's main frame. Microphone, screen capture,
+// notifications, geolocation and every other permission stay denied (voice uses
+// the separate Python workers, not renderer audio).
+function allowPermissionRequest(permission, details) {
+  if (permission !== "media" || !details) return false;
+  const types = Array.isArray(details.mediaTypes) ? details.mediaTypes : [];
+  if (types.length !== 1 || types[0] !== "video") return false;
+  if (details.isMainFrame === false) return false;
+  return originOf(details.requestingUrl) === APP_ORIGIN;
+}
+
+function allowPermissionCheck(permission, requestingOrigin, details) {
+  if (permission !== "media") return false;
+  if (!details || details.mediaType !== "video") return false;
+  return originOf(requestingOrigin || details.securityOrigin) === APP_ORIGIN;
+}
+
+module.exports = { validateSender, validateApiPath, readBoundedBody, validateVoiceOptions, allowPermissionRequest, allowPermissionCheck };

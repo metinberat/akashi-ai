@@ -15,7 +15,7 @@ const crypto = require("node:crypto");
 const { spawn } = require("node:child_process");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
-const { validateSender, validateApiPath, readBoundedBody, validateVoiceOptions } = require("./security.cjs");
+const { validateSender, validateApiPath, readBoundedBody, validateVoiceOptions, allowPermissionRequest, allowPermissionCheck } = require("./security.cjs");
 const { DesktopRuntimeSupervisor, boundedEnvironment, discoverPython } = require("./runtime-supervisor.cjs");
 
 protocol.registerSchemesAsPrivileged([
@@ -711,7 +711,9 @@ function contentSecurityPolicy() {
   }
   return [
     "default-src 'self'",
-    `script-src 'self' ${hashes.join(" ")}`,
+    // 'wasm-unsafe-eval' permits WebAssembly compilation only (MediaPipe hand
+    // tracking); JavaScript eval stays forbidden.
+    `script-src 'self' 'wasm-unsafe-eval' ${hashes.join(" ")}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' blob: data:",
     "font-src 'self' data:",
@@ -736,8 +738,9 @@ if (!ownsApplicationInstance) {
   });
 
   app.whenReady().then(() => {
-    session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
-    session.defaultSession.setPermissionCheckHandler(() => false);
+    // Only video-only camera access from the app's main frame (Spatial Lab hand tracking).
+    session.defaultSession.setPermissionRequestHandler((_contents, permission, callback, details) => callback(allowPermissionRequest(permission, details)));
+    session.defaultSession.setPermissionCheckHandler((_contents, permission, origin, details) => allowPermissionCheck(permission, origin, details));
     Menu.setApplicationMenu(null);
     ensureDesktopConfig();
     ensureAgentToken();

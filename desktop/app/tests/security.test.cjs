@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { validateSender, validateApiPath, readBoundedBody, validateVoiceOptions } = require("../security.cjs");
+const { validateSender, validateApiPath, readBoundedBody, validateVoiceOptions, allowPermissionRequest, allowPermissionCheck } = require("../security.cjs");
 test("IPC rejects foreign origins and subframes", () => {
   const frame = { url: "akashi://app/index.html" };
   validateSender({ senderFrame: frame, sender: { mainFrame: frame } });
@@ -27,4 +27,22 @@ test("voice IPC session id is charset-bounded and falls back to worker-generated
   for (const value of ["short", "bad id", "has" + String.fromCharCode(10) + "newline", "a".repeat(129), 42, null]) {
     assert.equal(validateVoiceOptions({ sessionId: value }).sessionId, "");
   }
+});
+test("permissions: only video-only camera from the app main frame is granted", () => {
+  const camera = { mediaTypes: ["video"], requestingUrl: "akashi://app/index.html", isMainFrame: true };
+  assert.equal(allowPermissionRequest("media", camera), true);
+  assert.equal(allowPermissionRequest("media", { ...camera, mediaTypes: ["audio"] }), false);
+  assert.equal(allowPermissionRequest("media", { ...camera, mediaTypes: ["video", "audio"] }), false);
+  assert.equal(allowPermissionRequest("media", { ...camera, mediaTypes: [] }), false);
+  assert.equal(allowPermissionRequest("media", { ...camera, isMainFrame: false }), false);
+  assert.equal(allowPermissionRequest("media", { ...camera, requestingUrl: "https://evil.example/" }), false);
+  assert.equal(allowPermissionRequest("media", { ...camera, requestingUrl: "akashi://evil/index.html" }), false);
+  for (const permission of ["display-capture", "geolocation", "notifications", "clipboard-read", "midi", "openExternal", "fullscreen"]) {
+    assert.equal(allowPermissionRequest(permission, camera), false, permission);
+  }
+  assert.equal(allowPermissionRequest("media", undefined), false);
+  assert.equal(allowPermissionCheck("media", "akashi://app", { mediaType: "video" }), true);
+  assert.equal(allowPermissionCheck("media", "akashi://app", { mediaType: "audio" }), false);
+  assert.equal(allowPermissionCheck("media", "https://evil.example", { mediaType: "video" }), false);
+  assert.equal(allowPermissionCheck("geolocation", "akashi://app", { mediaType: "video" }), false);
 });

@@ -111,6 +111,19 @@ class SpatialApiTests(unittest.TestCase):
         self.assertEqual(commit.status_code, 200, commit.text)
         self.assertEqual(commit.json()["snapshot"]["session"]["leases"], [])
 
+    def test_presence_over_http_resolves_hand_anchor_commands(self):
+        session_id = self.session()
+        self.post(f"/spatial/sessions/{session_id}/commands", {"request": {"type": "scene.add_asset", "fixture": "calibration"}})
+        bad = self.post(f"/spatial/sessions/{session_id}/presence", {"anchors": {"right_hand": {"position": [0, 1], "confidence": 2}}})
+        self.assertEqual(bad.status_code, 422)
+        self.assertEqual(self.client.put(f"/spatial/sessions/{session_id}/presence", headers=self.headers, json={"anchors": {}}).status_code, 405)
+        sent = self.post(f"/spatial/sessions/{session_id}/presence", {"anchors": {"right_hand": {"position": [0.7, 1.2, 0.0], "confidence": 0.9}}})
+        self.assertEqual(sent.status_code, 200)
+        moved = self.post(f"/spatial/sessions/{session_id}/interpret", {"text": "Move that character to my right hand."}).json()
+        object_id = moved["results"][0]["targets"][0]
+        self.assertEqual(moved["snapshot"]["state"]["objects"][object_id]["transform"]["position"], [0.7, 1.2, 0.0])
+        self.assertTrue(moved["snapshot"]["session"]["presence_fresh"])
+
     def test_chat_routes_to_open_spatial_lab_and_only_when_open(self):
         chat = {"message": "make it bigger", "session_id": "spatial-chat", "mode": "private"}
         response = self.post("/chat", chat).json()

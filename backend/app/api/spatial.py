@@ -186,7 +186,7 @@ async def end_lease(session_id: str, lease_id: str, spatial: SpatialLabService =
     return await guarded(run)
 
 
-@router.put("/sessions/{session_id}/presence")
+@router.post("/sessions/{session_id}/presence")
 async def presence(session_id: str, value: PresenceInput, spatial: SpatialLabService = Depends(service)):
     async def run():
         spatial.presence(session_id, {k: v.model_dump() for k, v in value.anchors.items()})
