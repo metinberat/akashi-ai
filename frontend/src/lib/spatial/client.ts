@@ -56,6 +56,7 @@ export interface SpatialApi {
   presence(id: string, anchors: Partial<Record<"left_hand" | "right_hand", { position: [number, number, number]; confidence: number }>>): Promise<unknown>;
   events(id: string, after?: number): Promise<{ session_id: string; revision: number; initial_state: SceneState | null; events: SpatialEvent[] }>;
   verifyReplay(id: string): Promise<{ verified: boolean; events: number; final_digest: string; live_digest: string; matches_live_state: boolean }>;
+  provenance(id: string, objectId: string): Promise<{ object_id: string; label: string | null; changes: Array<{ seq: number; at: string; kind: string; command: string; summary: string | null; origin: { en: string; tr: string; kind: string; device?: { name?: string }; modality?: string } }> }>;
   metrics(): Promise<{ submit_ms: { count: number; p50: number | null; p95: number | null; max: number | null }; counters: Record<string, number> }>;
   assets(): Promise<{ assets: AssetSummary[] }>;
   uploadAsset(file: File): Promise<AssetSummary>;
@@ -80,6 +81,7 @@ export function spatialApi(config: BackendConfig): SpatialApi {
     presence: (id, anchors) => json(config, `/spatial/sessions/${enc(id)}/presence`, post({ anchors })),
     events: (id, after = 0) => json(config, `/spatial/sessions/${enc(id)}/events?after=${after}&limit=500`),
     verifyReplay: (id) => json(config, `/spatial/sessions/${enc(id)}/replay/verify`, { method: "POST" }),
+    provenance: (id, objectId) => json(config, `/spatial/sessions/${enc(id)}/objects/${enc(objectId)}/provenance`),
     metrics: () => json(config, "/spatial/metrics"),
     assets: () => json(config, "/spatial/assets"),
     uploadAsset: (file) => {

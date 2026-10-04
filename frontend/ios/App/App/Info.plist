@@ -24,6 +24,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>AKASHİ, Spatial Lab el takibi için kamerayı yalnızca bu cihazda işler; görüntü cihazdan çıkmaz.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>AKASHİ, konuşmanızı metne dönüştürmek için mikrofona erişir.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

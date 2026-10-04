@@ -4,8 +4,8 @@
 // goes through React state except the small hands signal.
 
 import { DEFAULT_CALIBRATION, imageToViewport, viewportToImage, type CameraCalibration } from "@/lib/spatial/calibration";
-import type { SpatialApi, SpatialFailure } from "@/lib/spatial/client";
-import { SpatialGestureController } from "@/lib/spatial/controller";
+import type { SpatialFailure } from "@/lib/spatial/client";
+import { SpatialGestureController, type ControllerOptions, type PreviewSink } from "@/lib/spatial/controller";
 import { DEFAULT_GESTURE_CONFIG } from "@/lib/spatial/gesture/config";
 import type { HandFrame } from "@/lib/spatial/gesture/hand";
 import type { InteractionScene } from "@/lib/spatial/gesture/interaction";
@@ -14,6 +14,7 @@ import type { PerspectiveProjector } from "@/lib/spatial/projection";
 import { MediaPipeHandProvider } from "@/lib/spatial/providers/mediapipe";
 import { HandRecorder, RecordedHandProvider, validateRecording, type HandRecording } from "@/lib/spatial/providers/recorded";
 import { PointerHandProvider } from "@/lib/spatial/providers/synthetic";
+import { TouchHandProvider, touchGestureConfig } from "@/lib/spatial/providers/touch";
 import type { HandInputProvider, ProviderStatus } from "@/lib/spatial/providers/types";
 import type { SpatialSceneStore } from "@/lib/spatial/scene-store";
 import type { Signal } from "@/lib/spatial/signal";
@@ -21,7 +22,7 @@ import type { Capabilities, SceneState } from "@/lib/spatial/types";
 
 import type { HandsFrame } from "./spatial-panels";
 
-export type InputMode = "off" | "camera" | "simulated" | "recorded";
+export type InputMode = "off" | "camera" | "simulated" | "recorded" | "touch";
 
 export type RuntimeCallbacks = {
   onStatus: (status: ProviderStatus, label: string, mode: InputMode) => void;
@@ -56,22 +57,27 @@ export class SpatialInputRuntime {
   private paused = false;
   private renderer: { setInteractive(value: boolean): void } | null = null;
   readonly pipeline: GesturePipeline;
+  private touchPipeline: GesturePipeline | null = null;
+  private active: GesturePipeline;
+  private previewSink: PreviewSink | null = null;
   readonly controller: SpatialGestureController;
   private provider: HandInputProvider | null = null;
   private recorder: HandRecorder | null = null;
   private generation = 0;
 
-  constructor(private readonly store: SpatialSceneStore, api: SpatialApi, private readonly projector: PerspectiveProjector,
+  constructor(private readonly store: SpatialSceneStore, api: ControllerOptions["api"], private readonly projector: PerspectiveProjector,
               private readonly hands: Signal<HandsFrame>, private readonly callbacks: RuntimeCallbacks) {
     this.pipeline = new GesturePipeline(DEFAULT_GESTURE_CONFIG, projector, () => this.provider?.kind === "live" && this.calibration.swapHandedness);
+    this.active = this.pipeline;
     this.controller = new SpatialGestureController({
       api,
       store,
+      preview: () => this.previewSink,
       sessionId: () => this.sessionId,
       provider: () => this.provider?.id ?? "unknown",
       onError: (failure) => callbacks.onError(failure),
       onRefused: (reason) => {
-        this.pipeline.cancel(reason, performance.now());
+        this.active.cancel(reason, performance.now());
         callbacks.onNotice(reason === "object_busy" ? "That object is held by another input right now." : `Manipulation refused (${reason}).`);
       },
     });
@@ -89,6 +95,11 @@ export class SpatialInputRuntime {
     this.renderer = renderer;
   }
 
+  /** Live preview channel (remote presence) so other viewers see held objects move. */
+  setPreviewSink(sink: PreviewSink | null): void {
+    this.previewSink = sink;
+  }
+
   get providerId(): string | null {
     return this.provider?.id ?? null;
   }
@@ -102,7 +113,7 @@ export class SpatialInputRuntime {
     const view = this.store.view();
     if (!view || this.paused) return;
     const image = { width: frame.width, height: frame.height };
-    const out = this.pipeline.process(frame, interactionScene(view, this.capabilities), (p) => imageToViewport(p, image, this.viewport, this.calibration));
+    const out = this.active.process(frame, interactionScene(view, this.capabilities), (p) => imageToViewport(p, image, this.viewport, this.calibration));
     this.controller.handle(out.intents);
     this.controller.presence(out.hands, this.projector);
     for (const intent of out.intents) if (intent.type === "hover") this.callbacks.onHover(intent.objectId);
@@ -114,7 +125,8 @@ export class SpatialInputRuntime {
     this.generation += 1;
     this.provider?.stop();
     this.provider = null;
-    this.pipeline.reset();
+    this.active.reset();
+    this.active = this.pipeline;
     this.hands.set({ hands: [], poses: [], interaction: null, metrics: null });
     this.renderer?.setInteractive(false);
   }
@@ -133,6 +145,12 @@ export class SpatialInputRuntime {
     } else if (mode === "simulated") {
       if (!options.stage) return;
       provider = new PointerHandProvider(options.stage, (p) => viewportToImage(p, { width: 1280, height: 720 }, this.viewport, this.calibration));
+    } else if (mode === "touch") {
+      if (!options.stage) return;
+      // Touch needs no settle/dwell (fingers are not noisy detections): its own tuned pipeline.
+      this.touchPipeline ??= new GesturePipeline(touchGestureConfig(), this.projector, () => false);
+      this.active = this.touchPipeline;
+      provider = new TouchHandProvider(options.stage, (p) => viewportToImage(p, { width: 1280, height: 720 }, this.viewport, this.calibration));
     } else {
       if (!options.recording) return;
       let parsed: HandRecording;

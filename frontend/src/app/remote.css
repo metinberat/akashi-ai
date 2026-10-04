@@ -1,0 +1,133 @@
+/* AKASHI remote presence: thin client for phones/laptops and the owner's Devices drawer.
+   Same visual language as Spatial Lab: near-black, thin lines, red energy accent. */
+.remote-app {
+  --rm-bg: #05070a;
+  --rm-panel: #0b0f14;
+  --rm-line: #2a3038;
+  --rm-copy: #e6e8ea;
+  --rm-dim: #8f969d;
+  --rm-red: #ff2a40;
+  --rm-ok: #48b38b;
+  --rm-warn: #e3a336;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 100dvh;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: var(--rm-bg);
+  color: var(--rm-copy);
+  font-size: 14px;
+  box-sizing: border-box;
+}
+body:has(.remote-app) { background: #05070a; }
+.remote-app *, .remote-app *::before, .remote-app *::after { box-sizing: border-box; }
+.remote-loading { align-items: center; justify-content: center; color: var(--rm-dim); letter-spacing: .14em; font-size: 11px; }
+.remote-app h1 { margin: 4px 0 0; font-size: 22px; font-weight: 500; letter-spacing: -.01em; }
+.remote-app h3 { margin: 8px 0 0; font-size: 12px; color: var(--rm-dim); font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.remote-app header > span, .remote-brand, .remote-sheet > header span { color: var(--rm-dim); font-size: 10px; font-weight: 600; letter-spacing: .18em; }
+.remote-muted { margin: 0; color: var(--rm-dim); font-size: 13px; line-height: 1.5; }
+.remote-warning { margin: 0; padding: 10px 12px; border: 1px solid var(--rm-warn); border-radius: 8px; color: var(--rm-warn); font-size: 13px; line-height: 1.45; }
+.remote-error { margin: 0; padding: 10px 12px; border: 1px solid var(--rm-red); border-radius: 8px; color: #ffb4bd; font-size: 13px; }
+.remote-notice { margin: 0; color: var(--rm-dim); font-size: 12px; }
+.remote-app button, .remote-app input, .remote-app select {
+  font: inherit;
+  color: var(--rm-copy);
+  border: 1px solid var(--rm-line);
+  border-radius: 8px;
+  background: #10151b;
+  min-height: 44px; /* touch target */
+  padding: 8px 12px;
+}
+.remote-app button:disabled { opacity: .45; }
+.remote-app button[aria-pressed="true"] { border-color: var(--rm-red); background: #3a0d15; color: #fff; }
+.remote-primary { border-color: var(--rm-red) !important; background: #3a0d15 !important; font-weight: 600; }
+.remote-danger { border-color: #7a1f2a !important; color: #ffb4bd !important; }
+.remote-form { display: flex; flex-direction: column; gap: 12px; }
+.remote-form label { display: flex; flex-direction: column; gap: 6px; color: var(--rm-dim); font-size: 12px; }
+.remote-form input, .remote-form select { width: 100%; font-size: 16px; /* no iOS zoom */ }
+
+.remote-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.remote-top > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.remote-connection { font-size: 13px; font-weight: 500; }
+.remote-connection::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--rm-warn); }
+.remote-connection[data-state="online"]::before { background: var(--rm-ok); }
+.remote-connection[data-state="revoked"]::before, .remote-connection[data-state="unpaired"]::before { background: var(--rm-red); }
+.remote-tabs { display: flex; gap: 6px; overflow-x: auto; max-width: 100%; }
+.remote-tabs button { min-height: 36px; padding: 6px 10px; font-size: 12px; white-space: nowrap; }
+.remote-badge { display: inline-block; min-width: 18px; margin-left: 6px; padding: 1px 5px; border-radius: 999px; background: var(--rm-red); color: #fff; font-size: 11px; }
+
+.remote-stage {
+  position: relative;
+  height: min(58dvh, 520px);
+  min-height: 260px;
+  border: 1px solid var(--rm-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 70%, #141a22 0%, #06080b 70%);
+  touch-action: none; /* fingers drive the scene, not page scroll */
+  user-select: none;
+  -webkit-user-select: none;
+}
+.remote-app[data-input="camera"] .remote-stage { background: #000; }
+.remote-app[data-input="camera"] .remote-video { opacity: .9; }
+.remote-canvas-host { position: absolute; inset: 0; }
+.remote-stage[data-syncing="true"]::after { content: "SYNCING"; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: var(--rm-dim); font-size: 10px; letter-spacing: .18em; }
+.remote-label small { display: block; color: var(--rm-warn); }
+.remote-overlay { position: absolute; left: 12px; right: 12px; bottom: 64px; margin: 0; padding: 8px 10px; border-radius: 8px; background: #0b0f14e6; color: var(--rm-copy); font-size: 12px; text-align: center; }
+.remote-input-modes { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; gap: 6px; justify-content: center; }
+.remote-input-modes button { min-height: 38px; background: #0b0f14e6; font-size: 12px; }
+.remote-anchor { position: absolute; z-index: 3; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 2px solid #5fb0ff; border-radius: 50%; background: #5fb0ff33; pointer-events: none; font-style: normal; }
+.remote-anchor b { position: absolute; inset: 0; display: grid; place-items: center; color: #cfe7ff; font-size: 10px; }
+.remote-anchor small { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); white-space: nowrap; color: #9cc9f5; font-size: 9px; letter-spacing: .06em; }
+
+.remote-selected, .remote-sheet, .remote-reply { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--rm-line); border-radius: 12px; background: var(--rm-panel); }
+.remote-selected header { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.remote-selected header small { color: var(--rm-dim); font-size: 11px; }
+.remote-held { color: var(--rm-warn) !important; }
+.remote-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.remote-actions button { flex: 1 1 auto; }
+.remote-command { display: flex; gap: 6px; }
+.remote-command input { flex: 1; min-width: 0; font-size: 16px; }
+.remote-mic[aria-pressed="true"] { border-color: var(--rm-red); }
+.remote-reply p { margin: 0; line-height: 1.5; }
+.remote-sheet > header { display: flex; align-items: baseline; gap: 10px; }
+.remote-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.remote-list li { display: flex; flex-direction: column; gap: 4px; padding: 10px; border: 1px solid var(--rm-line); border-radius: 8px; }
+.remote-list li p { margin: 0; color: var(--rm-dim); font-size: 13px; }
+.remote-list small { color: var(--rm-dim); font-size: 12px; }
+.remote-history li[data-mine="true"] { border-color: #3a4a5a; }
+.remote-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.remote-chips li { padding: 4px 8px; border: 1px solid var(--rm-line); border-radius: 999px; font-size: 11px; color: var(--rm-dim); }
+.remote-capabilities li[data-state="active"] { border-color: var(--rm-ok); color: var(--rm-ok); }
+.remote-capabilities li[data-state="denied"] { border-color: var(--rm-red); color: #ffb4bd; }
+.remote-debug dl { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+.remote-debug dl div { display: flex; gap: 8px; }
+.remote-debug dt { min-width: 80px; color: var(--rm-dim); font-size: 11px; }
+.remote-debug dd { margin: 0; font-size: 11px; font-family: ui-monospace, monospace; word-break: break-all; }
+
+/* Owner drawer inside Spatial Lab (desktop/web). */
+.remote-presence { gap: 8px; }
+.remote-presence h4 { margin: 6px 0 0; color: var(--sp-dim, #8f969d); font-size: 9px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+.remote-presence-invite { display: flex; flex-direction: column; gap: 6px; }
+.remote-presence-invite label { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.remote-presence-code { display: flex; flex-direction: column; gap: 4px; padding: 10px; border: 1px solid var(--sp-red, #ff2a40); border-radius: 8px; }
+.remote-presence-code strong { font-family: ui-monospace, monospace; font-size: 22px; letter-spacing: .2em; }
+.remote-presence-code small, .remote-presence-devices small, .remote-presence-approvals small { color: var(--sp-dim, #8f969d); font-size: 10px; line-height: 1.4; }
+.remote-presence-code code { color: var(--sp-copy, #e6e8ea); word-break: break-all; }
+.remote-presence-devices, .remote-presence-approvals { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.remote-presence-devices li, .remote-presence-approvals li { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid var(--sp-line, #2a3038); border-radius: 8px; }
+.remote-presence-devices li[data-online="true"] { border-color: #2f6b55; }
+.remote-presence-scopes { display: flex; flex-direction: column; gap: 3px; margin: 0; padding: 6px 8px; border: 1px solid var(--sp-line, #2a3038); border-radius: 6px; }
+.remote-presence-scopes legend { padding: 0 4px; color: var(--sp-dim, #8f969d); font-size: 9px; letter-spacing: .12em; }
+.remote-presence-scopes label { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.spatial-held { display: block; color: #e3a336; }
+.spatial-warning { color: #e3a336 !important; }
+.spatial-provenance { padding: 8px 10px; border: 1px solid #2a3038; border-radius: 8px; background: #0b0f14e6; }
+.spatial-link { margin-left: auto; padding: 2px 8px !important; }
+
+@media (min-width: 760px) {
+  .remote-stage { height: 60vh; }
+}
+.remote-label { max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

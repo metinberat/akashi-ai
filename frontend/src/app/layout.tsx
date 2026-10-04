@@ -2,6 +2,7 @@
 import "./globals.css";
 import "./desktop-absolute.css";
 import "./spatial-lab.css";
+import "./remote.css";
 import type { Viewport } from "next";
 
 export const metadata: Metadata = {

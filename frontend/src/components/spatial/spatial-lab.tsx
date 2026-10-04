@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import type { BackendConfig } from "@/lib/api";
+import { ownerSession } from "@/lib/remote/owner";
+import { RemoteSpatial } from "@/lib/remote/spatial";
 import { DEFAULT_CALIBRATION, type CameraCalibration } from "@/lib/spatial/calibration";
 import { spatialApi, spatialFailure, type SpatialFailure } from "@/lib/spatial/client";
 import { DEFAULT_RIG, PerspectiveProjector } from "@/lib/spatial/projection";
@@ -16,6 +18,7 @@ import type { Capabilities, InterpretResult, SceneObject, SceneState, SpatialEve
 import { CommandBar, DebugPanel, InspectorPanel, LibraryPanel, ReplayPanel, sceneSummaryLine, type HandsFrame } from "./spatial-panels";
 import { SpatialRenderer, type RendererStats } from "./spatial-renderer";
 import { SpatialInputRuntime, type InputMode } from "./spatial-runtime";
+import { RemotePresencePanel } from "../remote/presence-panel";
 
 const SESSION_KEY = "akashi-spatial-session";
 const CALIBRATION_KEY = "akashi-spatial-calibration";
@@ -45,6 +48,21 @@ function HandOverlay({ signal, enabled }: { signal: ReturnType<typeof createSign
       style={{ left: `${hand.features.pointer.x * 100}%`, top: `${hand.features.pointer.y * 100}%` }}><b>{hand.handedness === "Right" ? "R" : "L"}</b></i>;
   })}</div>;
 }
+
+function ProvenanceLine({ api, sessionId, objectId, revision }: { api: ReturnType<typeof spatialApi>; sessionId: string; objectId: string; revision: number }) {
+  const [line, setLine] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    api.provenance(sessionId, objectId).then((record) => {
+      const last = record.changes[0];
+      if (alive) setLine(last ? `Last change #${last.seq}: ${last.origin.en}` : "Unchanged since it was added.");
+    }).catch(() => { if (alive) setLine(null); });
+    return () => { alive = false; };
+  }, [api, sessionId, objectId, revision]);
+  return line ? <p className="spatial-muted spatial-provenance" data-testid="provenance">{line}</p> : null;
+}
+
+const NO_STATE = () => () => undefined;
 
 export default function SpatialLab({ config, connected, shell }: { config: BackendConfig; connected: boolean; shell: "desktop" | "web" }) {
   const api = useMemo(() => spatialApi(config), [config]);
@@ -94,6 +112,29 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
     onCalibration: setCalibration,
   }));
   const sessionId = snapshot?.session.id ?? null;
+  // Owner realtime presence: live previews and hands of remote devices, approvals, roster.
+  // Commands keep using the HTTP API; this channel only adds push and preview streaming.
+  const owner = useMemo(() => {
+    if (!connected || !sessionId) return null;
+    const client = ownerSession(config, shell === "desktop" ? "AKASHI Desktop" : "AKASHI Web",
+      () => [{ name: "display", state: "available" }, { name: "approval_surface", state: "available" }, { name: "keyboard", state: "available" }]);
+    return { client, spatial: new RemoteSpatial(client, store, { sessionId }) };
+  }, [config, connected, sessionId, shell, store]);
+  const [presenceOpen, setPresenceOpen] = useState(false);
+  useEffect(() => {
+    if (!owner) return;
+    const stop = owner.spatial.start();
+    owner.client.start();
+    const port = owner.spatial.port();
+    runtime.setPreviewSink((session, leaseId, objectId, transform) => port.preview(session, leaseId, objectId, transform));
+    return () => { runtime.setPreviewSink(null); stop(); owner.client.stop(); };
+  }, [owner, runtime]);
+  const ownerState = useSyncExternalStore(useCallback((listener: () => void) => owner ? owner.client.onState(listener) : NO_STATE(), [owner]),
+    () => owner?.client.state ?? "idle", () => "idle");
+  const ownerVersion = useSyncExternalStore(useCallback((listener: () => void) => owner ? owner.spatial.subscribeTo(listener) : NO_STATE(), [owner]),
+    () => owner?.spatial.version ?? 0, () => 0);
+  const presence = useMemo(() => (ownerVersion >= 0 && owner ? { leases: owner.spatial.leases, roster: owner.spatial.roster, anchors: [...owner.spatial.presence.values()] } : null),
+    [owner, ownerVersion]);
   useEffect(() => { runtime.configure({ calibration }); }, [runtime, calibration]);
   useEffect(() => { runtime.configure({ capabilities }); }, [runtime, capabilities]);
   useEffect(() => { runtime.configure({ sessionId }); }, [runtime, sessionId]);
@@ -137,8 +178,9 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
   }, [connected, openSession]);
 
   // Poll for changes from other origins (voice, /chat, tools). Cheap when unchanged.
+  // While the owner realtime channel is online, changes are pushed instead.
   useEffect(() => {
-    if (!connected || !snapshot?.session.id || replay) return;
+    if (!connected || !snapshot?.session.id || replay || ownerState === "online") return;
     const id = snapshot.session.id;
     let alive = true;
     const timer = window.setInterval(async () => {
@@ -151,7 +193,7 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
       } catch { /* transient; the next poll retries */ }
     }, 1000);
     return () => { alive = false; window.clearInterval(timer); };
-  }, [api, connected, replay, snapshot?.session.id, store]);
+  }, [api, connected, ownerState, replay, snapshot?.session.id, store]);
 
   // Renderer lifecycle.
   useEffect(() => {
@@ -284,9 +326,15 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
       const height = o.asset.normalization.size[1] * o.transform.scale;
       const at = projector.project([o.transform.position[0], o.transform.position[1] + height + 0.06, o.transform.position[2]]);
       const chest = projector.project([o.transform.position[0], o.transform.position[1] + height * 0.6, o.transform.position[2]]);
-      return at && chest ? { id: o.id, label: o.label, x: at.x, y: at.y, chest, selected: displayed.selection.includes(o.id), form: o.asset.form?.version_label ?? null } : null;
-    }).filter(Boolean) as Array<{ id: string; label: string; x: number; y: number; chest: { x: number; y: number }; selected: boolean; form: string | null }>;
-  }, [displayed, projector, aspect]);
+      const holder = presence?.leases.find((lease) => lease.object_id === o.id && lease.holder?.kind === "device")?.holder?.device_name ?? null;
+      return at && chest ? { id: o.id, label: o.label, x: at.x, y: at.y, chest, selected: displayed.selection.includes(o.id), form: o.asset.form?.version_label ?? null, holder } : null;
+    }).filter(Boolean) as Array<{ id: string; label: string; x: number; y: number; chest: { x: number; y: number }; selected: boolean; form: string | null; holder: string | null }>;
+  }, [displayed, projector, aspect, presence]);
+  const remoteAnchors = useMemo(() => (!aspect || !presence ? [] : presence.anchors.flatMap((entry) => Object.entries(entry.anchors).map(([hand, anchor]) => {
+    const at = projector.project(anchor.position);
+    return at ? { key: `${entry.session}-${hand}`, name: entry.device.name, hand: hand === "right_hand" ? "R" : "L", x: at.x, y: at.y } : null;
+  }))).filter(Boolean) as Array<{ key: string; name: string; hand: string; x: number; y: number }>, [presence, projector, aspect]);
+  const remoteDevices = presence?.roster.filter((entry) => entry.device.kind === "device") ?? [];
 
   const session = snapshot?.session ?? null;
   const cameraOn = mode === "camera" && providerStatus.state === "running";
@@ -300,7 +348,8 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
     <div ref={stageRef} className="spatial-stage" data-camera={cameraOn} data-replay={Boolean(replay)}>
       <video ref={videoRef} className="spatial-video" data-mirror={calibration.mirror} muted playsInline aria-hidden="true" />
       <div ref={canvasHostRef} className="spatial-canvas-host" data-testid="spatial-viewport" />
-      {labels.map((item) => <span key={item.id} className="spatial-object-label" data-object={item.id} data-anchor={`${item.chest.x.toFixed(4)},${item.chest.y.toFixed(4)}`} data-selected={item.selected} style={{ left: `${item.x * 100}%`, top: `${item.y * 100}%` }}>{item.label}{item.form ? <small>{item.form}</small> : null}</span>)}
+      {labels.map((item) => <span key={item.id} className="spatial-object-label" data-object={item.id} data-anchor={`${item.chest.x.toFixed(4)},${item.chest.y.toFixed(4)}`} data-selected={item.selected} style={{ left: `${item.x * 100}%`, top: `${item.y * 100}%` }}>{item.label}{item.form ? <small>{item.form}</small> : null}{item.holder ? <small className="spatial-held">held by {item.holder}</small> : null}</span>)}
+      {remoteAnchors.map((anchor) => <i key={anchor.key} className="remote-anchor" data-remote-anchor={anchor.name} style={{ left: `${anchor.x * 100}%`, top: `${anchor.y * 100}%` }}><b>{anchor.hand}</b><small>{anchor.name}</small></i>)}
       <HandOverlay signal={handsSignal} enabled={mode !== "off" && !replay} />
       <header className="spatial-topbar">
         <div className="spatial-title"><span>SPATIAL LAB · V1</span><strong>{sceneSummaryLine(view)}</strong><small title={capabilities?.scope.spatial_model}>Camera-backed 2.5D · no depth, occlusion or world anchoring</small></div>
@@ -310,6 +359,8 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
           <button type="button" aria-pressed={mode === "simulated"} disabled={Boolean(replay)} onClick={() => void startInput(mode === "simulated" ? "off" : "simulated")} title="Mouse-driven synthetic hand: hold the button to pinch, press 2 for a mirrored second hand">Simulate</button>
           <label className="spatial-file-button" title="Replay a recorded hand session">Recording<input type="file" accept="application/json,.json" onChange={(e) => { const file = e.target.files?.[0]; if (file) void startInput("recorded", file); e.target.value = ""; }} /></label>
           {cameras.length > 1 && <select aria-label="Camera device" value={deviceId} onChange={(e) => setDeviceId(e.target.value)}>{cameras.map((c) => <option key={c.deviceId} value={c.deviceId}>{c.label}</option>)}</select>}
+          <button type="button" aria-pressed={presenceOpen} onClick={() => setPresenceOpen(!presenceOpen)} data-realtime={ownerState}
+            title="Remote devices: invite, permissions, approvals">Devices{remoteDevices.length ? ` · ${remoteDevices.length}` : ""}</button>
           <button type="button" aria-pressed={debug} onClick={() => setDebug(!debug)}>Debug</button>
         </div>
       </header>
@@ -360,6 +411,8 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
     </aside>
 
     <aside className="spatial-side spatial-side-right">
+      {presenceOpen && <RemotePresencePanel config={config} client={owner?.client ?? null} onClose={() => setPresenceOpen(false)} />}
+      {selected && sessionId && !replay && <ProvenanceLine api={api} sessionId={sessionId} objectId={selected.id} revision={session?.revision ?? 0} />}
       {replay ? <ReplayPanel frames={replay.frames} index={replay.index} verified={replay.verified} error={replay.error}
         onIndex={(index) => setReplay({ ...replay, index: Math.max(0, Math.min(index, replay.frames.length - 1)) })}
         onVerify={() => { const id = sessionId; if (id) void api.verifyReplay(id).then((verified) => setReplay((current) => current && { ...current, verified })).catch((error) => setFailure(spatialFailure(error))); }}
