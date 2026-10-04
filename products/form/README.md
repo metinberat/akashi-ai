@@ -155,6 +155,21 @@ All `/api/` endpoints require the local token and origin/host checks. Main route
 Shape jobs are inspectable in the project snapshot; exit stops the owned worker.
 There is not yet a dedicated shape cancel/resume API.
 
+## External read-only consumers (AKASHI Spatial Lab)
+
+AKASHI Spatial Lab lists and loads FORM characters by reading this data
+directory **read-only** (SQLite opened with `mode=ro`): `studio_projects`,
+`studio_links`, `studio_files` and `production_jobs`, plus verified export GLBs
+inside project directories. It never writes FORM data, never starts FORM, and
+FORM never needs AKASHI. Versions are numbered as FORM numbers them (`V01…`, in
+production-link order); a load is accepted only when the file's SHA-256 matches
+FORM's export readback. The adapter contract is `form-library-read-1`
+(`backend/app/spatial/form_library.py`); the contract test
+`backend/tests/test_spatial_assets.py` builds a library with this package's real
+`Projects` class, so renaming or reshaping those tables or the export readback
+fields breaks that test — update the adapter in the same change. Point AKASHI at
+a non-default directory with `AKASHI_FORM_DATA_DIR`.
+
 ## Security and current quality limits
 
 Electron sandbox/contextIsolation stay enabled, renderer Node stays disabled.

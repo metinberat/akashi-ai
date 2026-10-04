@@ -19,6 +19,7 @@ FastAPI AKASHI Core
 ├─ Persistent task engine
 ├─ Validated uploaded files
 ├─ Device pairing/action relay
+├─ Spatial Lab scene service (one command path, action history, FORM read-only)
 └─ Authenticated SSE event stream
         │
         ├─ Ollama / Gemini
@@ -91,3 +92,17 @@ the renderer.
 The Electron shell loads the same static export over the privileged
 `akashi://app` protocol with context isolation, renderer sandboxing, Node.js
 disabled, navigation blocked, and a restrictive Content Security Policy.
+
+## Spatial Lab and the action-history foundation
+
+`app/history` is a domain-agnostic action history: commands become events with
+reversible, verifiable patches and state digests in a hash-chained, crash-safe
+JSONL log; undo/redo are events; replay re-executes the log and must reproduce
+every digest. Spatial Lab (`app/spatial`) is its first domain: gesture, language,
+UI and tool inputs all become one request contract, are compiled to concrete
+commands (reference resolution, relative → absolute, FORM version selection) and
+applied by a pure reducer. The backend owns the scene; clients draw a replica
+plus transient previews for objects held by a hand. FORM data is read through a
+read-only adapter (`form-library-read-1`) and is never written. Hand tracking
+(MediaPipe, local WASM and model) runs in the client; only commands and
+ephemeral hand anchors reach Core. Details: [spatial-lab.md](spatial-lab.md).

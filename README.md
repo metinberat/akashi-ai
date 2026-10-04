@@ -20,10 +20,12 @@ request back to Core over `/chat`; only the conversational audio is direct.
 - `desktop/agent/` — loopback-only Windows telemetry/action service and secure
   Core relay.
 - `docs/` — architecture, development, and security details.
+- `shared/contracts/` — generated cross-language contracts (Spatial Lab requests
+  and replay fixture).
 
 The established `/health`, `/chat`, and `/image/*` contracts remain available.
 New system capabilities are additive under `/memory`, `/research`, `/tools`,
-`/tasks`, `/files`, `/devices`, `/events`, and `/system`.
+`/tasks`, `/files`, `/devices`, `/events`, `/system`, and `/spatial`.
 
 Start with [Development](docs/development.md), then review the
 [Architecture](docs/architecture.md) and [Security model](docs/security.md).
@@ -34,3 +36,12 @@ The workshop applies typed modifications, compares measured variants, preserves
 the best checkpoint and can verify saved Blender weights/deformation through the
 controlled Windows Agent. Current physical validation uses synthetic assets only;
 numerical tests are not professional or artistic quality certification.
+
+**Spatial Lab V1** is a camera-backed 2.5D workspace where real 3D assets
+(primarily FORM exports, read-only) are moved by hand gestures, natural language,
+UI and AKASHI tools through one validated command path with undo/redo and
+deterministic replay: [architecture](docs/spatial-lab.md) and
+[local acceptance contract](docs/acceptance/spatial-lab-v1.md). Physical webcam,
+GPU and packaged-desktop behaviour still require local acceptance.
+
+AI agents working in this repository follow [AI_ENGINEERING_RULES.md](AI_ENGINEERING_RULES.md).

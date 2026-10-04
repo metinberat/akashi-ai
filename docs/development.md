@@ -154,12 +154,29 @@ untrusted data and cannot authorize tools or maintenance actions.
   durumunu al**.
 - Remote PC: pair the relay, send `get_system_status`; for launch/project/screenshot
   actions tick the explicit confirmation box and inspect the returned result.
+- Spatial Lab: follow [the local acceptance contract](acceptance/spatial-lab-v1.md)
+  (camera, gestures, FORM, replay); record results in its §6.
+
+## Spatial Lab assets
+
+Hand tracking runs fully offline from files the frontend serves itself:
+
+```powershell
+cd frontend
+npm run spatial:assets   # MediaPipe WASM from node_modules + pinned model (SHA-256 checked); network once
+npm run build            # prebuild verifies the assets (--offline) and fails if missing
+```
+
+Optional settings in `backend/.env`: `SPATIAL_DIR`, `AKASHI_FORM_DATA_DIR`
+(defaults to FORM's userData under `%APPDATA%`), `AKASHI_SPATIAL_INTERPRETER`
+(`auto` = rules then the FAST model; `rules` = never call a model).
 
 ## Automated validation
 
 ```powershell
 cd backend
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m app.spatial.contract   # exit 1 if shared/contracts/spatial is stale
 
 cd ..\frontend
 npx tsc --noEmit
@@ -167,6 +184,7 @@ npm run lint
 npm run test:api
 npm run test:e2e
 npm run build
+npm run test:spatial   # real Core + real MediaPipe via Chromium's fake camera
 npm run android:sync
 npm run ios:sync
 

@@ -54,6 +54,40 @@ shared client bundle. Rotate both the FastAPI token and paired-device identity i
 a device is lost. Revoke the device in the Devices panel as well as deleting its
 local credential.
 
+## Spatial Lab (camera, WebAssembly, scene actions)
+
+- **Camera permission (desktop).** Electron previously denied every renderer
+  permission. It now grants exactly one: a `media` request whose media types are
+  `["video"]` only, from the `akashi://app` **main frame**
+  (`desktop/app/security.cjs` → `allowPermissionRequest`, tested in
+  `tests/security.test.cjs`). Microphone, combined audio+video, screen capture,
+  geolocation, notifications, clipboard and all other permissions stay denied.
+  Voice capture continues to run in the separate Python workers.
+- **Frames stay local.** Hand tracking runs MediaPipe Hand Landmarker inside the
+  renderer. Camera frames are never uploaded; only landmark-derived hand anchors
+  (two 3D points with a confidence, ≤ 4 Hz) are posted to Core while Spatial Lab
+  is open, kept in memory for 2 s and never persisted.
+- **CSP.** `script-src` adds `'wasm-unsafe-eval'`, which permits WebAssembly
+  compilation only (needed by the local MediaPipe runtime). JavaScript `eval`
+  remains forbidden. The WASM files and the model are served from the app
+  origin; the model is fetched once by `npm run spatial:assets` and installed
+  only if its SHA-256 matches the pinned value.
+- **Scene-bounded actions.** `spatial.*` tools and the `spatial.scene` live
+  action change only the Spatial Lab scene document. They cannot touch files,
+  the desktop, the browser or the Windows Agent. Removing an object needs
+  confirmation (UI dialog, `spatial.confirm` tool with `confirm` risk, or an
+  explicit confirm token for language); model-proposed removals are discarded.
+- **FORM data is read-only.** The FORM adapter opens `expert.sqlite3` with
+  `mode=ro`, only serves GLBs inside the FORM project directory (no symlinks),
+  and refuses a file whose SHA-256 differs from FORM's export record.
+- **Uploaded GLBs** are bounded (20 MiB upload, 48 MiB inspection), fully
+  validated (container, every index reference, node hierarchy acyclicity), may
+  not reference external or data URIs, and may not require decoder extensions
+  (Draco/meshopt/KTX2). They are stored content-addressed and never modified.
+- **History integrity.** Session logs are hash-chained; edited, reordered or
+  truncated logs fail closed (`423 session_corrupted`) instead of being repaired.
+  Credential-like text in language commands is redacted before it is recorded.
+
 ## Known boundaries
 
 The JSON stores are appropriate for one personal Core process, not a horizontally
