@@ -1,0 +1,295 @@
+{
+  "capabilities": [
+    "approval_surface",
+    "camera",
+    "display",
+    "gesture",
+    "hand_tracking",
+    "keyboard",
+    "microphone",
+    "notifications",
+    "orientation",
+    "pointer",
+    "speech_output",
+    "touch",
+    "voice_input"
+  ],
+  "capability_states": [
+    "available",
+    "active",
+    "unavailable",
+    "denied"
+  ],
+  "id_pattern": "^[A-Za-z0-9_-]{8,64}$",
+  "kind_pattern": "^[a-z][a-z0-9_.]{1,47}$",
+  "kinds": {
+    "approval.decide": {
+      "any_of": [
+        "approvals.general",
+        "approvals.spatial"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "approval"
+    },
+    "approvals.list": {
+      "any_of": [
+        "approvals.general",
+        "approvals.spatial"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "approval"
+    },
+    "capabilities.update": {
+      "any_of": [],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "control"
+    },
+    "devices.providers": {
+      "any_of": [],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": true,
+      "rate_class": "reliable"
+    },
+    "ping": {
+      "any_of": [],
+      "delivery": "realtime",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "realtime"
+    },
+    "session.close": {
+      "any_of": [],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "control"
+    },
+    "spatial.command": {
+      "any_of": [
+        "spatial.control"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "reliable"
+    },
+    "spatial.confirm": {
+      "any_of": [
+        "approvals.general",
+        "approvals.spatial",
+        "spatial.control"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "approval"
+    },
+    "spatial.events": {
+      "any_of": [
+        "spatial.view"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "reliable"
+    },
+    "spatial.interpret": {
+      "any_of": [
+        "spatial.control"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "reliable"
+    },
+    "spatial.lease.begin": {
+      "any_of": [
+        "spatial.control"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "reliable"
+    },
+    "spatial.lease.end": {
+      "any_of": [
+        "spatial.control"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "reliable"
+    },
+    "spatial.lease.renew": {
+      "any_of": [
+        "spatial.control"
+      ],
+      "delivery": "realtime",
+      "max_age_ms": 1500.0,
+      "owner_only": false,
+      "rate_class": "realtime"
+    },
+    "spatial.presence": {
+      "any_of": [
+        "spatial.presence"
+      ],
+      "delivery": "realtime",
+      "max_age_ms": 1000.0,
+      "owner_only": false,
+      "rate_class": "realtime"
+    },
+    "spatial.preview": {
+      "any_of": [
+        "spatial.control"
+      ],
+      "delivery": "realtime",
+      "max_age_ms": 400.0,
+      "owner_only": false,
+      "rate_class": "realtime"
+    },
+    "spatial.provenance": {
+      "any_of": [
+        "spatial.view"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "reliable"
+    },
+    "spatial.sessions": {
+      "any_of": [
+        "spatial.view"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "reliable"
+    },
+    "spatial.subscribe": {
+      "any_of": [
+        "spatial.view"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "reliable"
+    },
+    "voice.state": {
+      "any_of": [
+        "assistant.chat",
+        "voice.spatial"
+      ],
+      "delivery": "realtime",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "realtime"
+    },
+    "voice.utterance": {
+      "any_of": [
+        "assistant.chat",
+        "voice.spatial"
+      ],
+      "delivery": "reliable",
+      "max_age_ms": null,
+      "owner_only": false,
+      "rate_class": "voice"
+    }
+  },
+  "max_batch": 32,
+  "max_message_bytes": 65536,
+  "nonce_ttl_seconds": 60.0,
+  "presets": {
+    "approver": [
+      "approvals.spatial",
+      "approvals.general"
+    ],
+    "spatial-remote": [
+      "spatial.view",
+      "spatial.control",
+      "spatial.presence",
+      "voice.spatial",
+      "approvals.spatial"
+    ],
+    "spatial-viewer": [
+      "spatial.view"
+    ]
+  },
+  "proof_prefix": "akashi.remote.session/1",
+  "protocol": "akashi.remote/1",
+  "rate_classes": {
+    "approval": {
+      "burst": 10.0,
+      "per_second": 5.0
+    },
+    "control": {
+      "burst": 6.0,
+      "per_second": 2.0
+    },
+    "realtime": {
+      "burst": 120.0,
+      "per_second": 90.0
+    },
+    "reliable": {
+      "burst": 40.0,
+      "per_second": 20.0
+    },
+    "voice": {
+      "burst": 3.0,
+      "per_second": 1.0
+    }
+  },
+  "scopes": [
+    {
+      "description": "See the Spatial Lab scene, its history, leases and the devices in it.",
+      "requires": [],
+      "scope": "spatial.view"
+    },
+    {
+      "description": "Change the Spatial Lab scene (select, move, rotate, scale, display, animation, FORM versions, undo/redo).",
+      "requires": [
+        "spatial.view"
+      ],
+      "scope": "spatial.control"
+    },
+    {
+      "description": "Share hand anchors and cursors derived on the device (never camera frames).",
+      "requires": [
+        "spatial.view"
+      ],
+      "scope": "spatial.presence"
+    },
+    {
+      "description": "Speak or type scene instructions to AKASHI; they run through the Spatial Lab command path.",
+      "requires": [
+        "spatial.control",
+        "spatial.view"
+      ],
+      "scope": "voice.spatial"
+    },
+    {
+      "description": "Converse with AKASHI; live actions are limited to scene actions.",
+      "requires": [],
+      "scope": "assistant.chat"
+    },
+    {
+      "description": "See and decide pending Spatial Lab confirmations.",
+      "requires": [],
+      "scope": "approvals.spatial"
+    },
+    {
+      "description": "See and decide every pending AKASHI approval (tasks and autonomy included).",
+      "requires": [
+        "approvals.spatial"
+      ],
+      "scope": "approvals.general"
+    }
+  ],
+  "version": 1
+}

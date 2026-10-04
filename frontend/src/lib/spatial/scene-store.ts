@@ -22,9 +22,10 @@ export class SpatialSceneStore {
     return this.snapshot?.session.revision ?? -1;
   }
 
-  /** Accept a snapshot unless it is older than what we already hold. */
-  apply(snapshot: Snapshot): boolean {
-    if (this.snapshot && snapshot.session.id === this.snapshot.session.id && snapshot.session.revision < this.snapshot.session.revision) {
+  /** Accept a snapshot unless it is older than what we already hold. ``force`` is for an
+   *  authoritative re-sync (Core may have restored a different history). */
+  apply(snapshot: Snapshot, force = false): boolean {
+    if (!force && this.snapshot && snapshot.session.id === this.snapshot.session.id && snapshot.session.revision < this.snapshot.session.revision) {
       return false;
     }
     this.snapshot = snapshot;
