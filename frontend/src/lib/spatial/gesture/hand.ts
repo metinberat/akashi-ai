@@ -58,6 +58,8 @@ export type HandFeatures = {
   extension: number;
   /** Index finger extension ratio alone (a pinch keeps the index finger partly extended). */
   indexExtension: number;
+  /** Largest extension among index..pinky: a grab needs every finger curled (pointing is not a grab). */
+  maxExtension: number;
   /** Knuckle-line angle in the image plane (radians). */
   roll: number;
 };
@@ -106,6 +108,7 @@ export function computeFeatures(hand: HandObservation, aspect: number, toViewpor
     pinchRatio,
     extension,
     indexExtension: ratios[0],
+    maxExtension: Math.max(...ratios),
     roll: Math.atan2(p[L.PINKY_MCP].y - p[L.INDEX_MCP].y, (p[L.PINKY_MCP].x - p[L.INDEX_MCP].x) * aspect),
   };
 }

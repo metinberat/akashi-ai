@@ -119,7 +119,7 @@ export class SpatialInputRuntime {
     this.renderer?.setInteractive(false);
   }
 
-  async start(mode: InputMode, options: { video?: HTMLVideoElement | null; stage?: HTMLElement | null; deviceId?: string; recording?: File }): Promise<void> {
+  async start(mode: InputMode, options: { video?: HTMLVideoElement | null; stage?: HTMLElement | null; deviceId?: string; recording?: File; delegate?: "GPU" | "CPU" }): Promise<void> {
     this.stop();
     const generation = this.generation;
     if (mode === "off") {
@@ -129,7 +129,7 @@ export class SpatialInputRuntime {
     let provider: HandInputProvider;
     if (mode === "camera") {
       if (!options.video) return;
-      provider = new MediaPipeHandProvider({ video: options.video, deviceId: options.deviceId || undefined });
+      provider = new MediaPipeHandProvider({ video: options.video, deviceId: options.deviceId || undefined, delegate: options.delegate });
     } else if (mode === "simulated") {
       if (!options.stage) return;
       provider = new PointerHandProvider(options.stage, (p) => viewportToImage(p, { width: 1280, height: 720 }, this.viewport, this.calibration));
@@ -173,7 +173,8 @@ export class SpatialInputRuntime {
     this.recorder = null;
     if (!recorder || !recorder.size) return null;
     const provider = this.provider;
-    return recorder.export({ provider: provider?.id ?? "unknown", kind: provider?.kind ?? "synthetic", device: provider?.metrics().device }, this.calibration);
+    const metrics = provider?.metrics();
+    return recorder.export({ provider: provider?.id ?? "unknown", kind: provider?.kind ?? "synthetic", device: metrics?.device, delegate: metrics?.delegate }, this.calibration);
   }
 
   dispose(): void {

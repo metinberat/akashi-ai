@@ -19,6 +19,7 @@ import { SpatialInputRuntime, type InputMode } from "./spatial-runtime";
 
 const SESSION_KEY = "akashi-spatial-session";
 const CALIBRATION_KEY = "akashi-spatial-calibration";
+const DELEGATE_KEY = "akashi-spatial-delegate";
 const UI_ORIGIN = { kind: "ui" as const, provider: "spatial-lab-ui" };
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -76,6 +77,8 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
   const [aspect, setAspect] = useState(16 / 9);
   const [recording, setRecording] = useState<number | null>(null);
   const [providerLabel, setProviderLabel] = useState("none");
+  // GPU vs CPU inference matters under GPU contention (local models, Blender); tuned locally.
+  const [delegate, setDelegate] = useState<"GPU" | "CPU">(() => readStorage(DELEGATE_KEY, { value: "GPU" as "GPU" | "CPU" }).value);
 
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasHostRef = useRef<HTMLDivElement>(null);
@@ -206,9 +209,10 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
   // Input providers ------------------------------------------------------------------
   const startInput = useCallback(async (next: InputMode, recordingFile?: File) => {
     setFailure(null);
-    await runtime.start(next, { video: videoRef.current, stage: stageRef.current, deviceId, recording: recordingFile });
+    await runtime.start(next, { video: videoRef.current, stage: stageRef.current, deviceId, recording: recordingFile, delegate });
     if (next === "camera" && runtime.providerId) setCameras(await listCameras().catch(() => []));
-  }, [deviceId, runtime]);
+  }, [delegate, deviceId, runtime]);
+  useEffect(() => { writeStorage(DELEGATE_KEY, { value: delegate }); }, [delegate]);
   useEffect(() => { runtime.configure({ paused: Boolean(replay) }); }, [runtime, replay]);
 
   // Commands --------------------------------------------------------------------------
@@ -334,6 +338,7 @@ export default function SpatialLab({ config, connected, shell }: { config: Backe
         <label><input type="checkbox" checked={calibration.mirror} onChange={(e) => setCalibration({ ...calibration, mirror: e.target.checked })} /> Mirror (selfie view)</label>
         <label><input type="checkbox" checked={calibration.swapHandedness} onChange={(e) => setCalibration({ ...calibration, swapHandedness: e.target.checked })} /> Swap camera handedness labels</label>
         <label>Reach gain {calibration.gain.toFixed(2)}<input type="range" min={0.8} max={1.8} step={0.05} value={calibration.gain} onChange={(e) => setCalibration({ ...calibration, gain: Number(e.target.value) })} /></label>
+        <label>Inference <select aria-label="Inference delegate" value={delegate} onChange={(e) => setDelegate(e.target.value as "GPU" | "CPU")}><option value="GPU">GPU (WebGL)</option><option value="CPU">CPU (WASM)</option></select><small className="spatial-muted">applies on next camera start</small></label>
         <div className="spatial-button-row">
           {recording === null ? <button type="button" onClick={() => { runtime.startRecording(); setRecording(Date.now()); }}>Record hands</button>
             : <button type="button" onClick={() => {

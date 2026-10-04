@@ -15,7 +15,7 @@ export type RecordedFrame = { t: number; hands: HandObservation[]; inferenceMs?:
 export type HandRecording = {
   schema: typeof RECORDING_SCHEMA;
   created_at: string;
-  source: { provider: string; kind: ProviderKind; device?: string; resolution: { width: number; height: number }; notes?: string };
+  source: { provider: string; kind: ProviderKind; device?: string; delegate?: string; resolution: { width: number; height: number }; notes?: string };
   calibration?: CameraCalibration;
   frames: RecordedFrame[];
 };
@@ -136,7 +136,7 @@ export class HandRecorder {
     return true;
   }
 
-  export(source: { provider: string; kind: ProviderKind; device?: string; notes?: string }, calibration?: CameraCalibration): HandRecording {
+  export(source: { provider: string; kind: ProviderKind; device?: string; delegate?: string; notes?: string }, calibration?: CameraCalibration): HandRecording {
     return validateRecording({
       schema: RECORDING_SCHEMA,
       created_at: new Date().toISOString(),

@@ -91,7 +91,9 @@ export class PoseClassifier {
         // A pinch keeps the index finger partly extended; a fist curls it. This
         // keeps a closing fist (thumb near index) from registering as a pinch.
         const pinchMetric = f.indexExtension >= this.config.pinch.minIndexExtension ? f.pinchRatio : Math.max(f.pinchRatio, this.config.pinch.exit + 1);
-        const grabEvent = machine.grab.update(f.extension, now, settled && !machine.pinch.active);
+        // Grab = every finger curled. Using the mean let a pointing hand (one finger
+        // extended, three curled) register as a grab on real MediaPipe data.
+        const grabEvent = machine.grab.update(f.maxExtension, now, settled && !machine.pinch.active);
         if (grabEvent) events.push({ hand: hand.id, pose: "grab", kind: grabEvent, at: now });
         const pinchEvent = machine.pinch.update(pinchMetric, now, settled && !machine.grab.active);
         if (pinchEvent) events.push({ hand: hand.id, pose: "pinch", kind: pinchEvent, at: now });
