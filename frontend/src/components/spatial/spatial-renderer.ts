@@ -29,6 +29,7 @@ type Entry = {
   hudNodes: THREE.Object3D[];
   ring: THREE.Mesh;
   measured: THREE.Vector3 | null;
+  hudPlaying: boolean;
 };
 
 export type RendererStats = { frames: number; fps: number; frameMs: number; calls: number; triangles: number; objects: number; assets: number; continuous: boolean };
@@ -123,7 +124,7 @@ export class SpatialRenderer {
     group.add(ring);
     this.scene.add(group);
     const entry: Entry = { object, group, norm, model: null, assetId: object.asset.asset_id, mixer: null, clips: [], action: null, actionClip: null,
-      skeleton: null, bounds: null, hudNodes: [], ring, measured: null };
+      skeleton: null, bounds: null, hudNodes: [], ring, measured: null, hudPlaying: false };
     this.entries.set(object.id, entry);
     this.attachAsset(entry);
     return entry;
@@ -202,7 +203,24 @@ export class SpatialRenderer {
         entry.bounds.visible = false;
       }
       this.animate(entry, object);
+      this.hudEnergy(entry, object, view);
     }
+  }
+
+  /** FORM HUD energy flow (shape-key clips on hud-ring meshes) loops while FORM HUD and VFX are on. */
+  private hudEnergy(entry: Entry, object: SceneObject, view: SceneState): void {
+    if (!entry.mixer) return;
+    const wanted = object.display.form_hud && view.view.vfx_visible && object.visible;
+    let playing = false;
+    for (const summary of object.asset.clips.filter((c) => c.kind === "hud_morph")) {
+      const clip = entry.clips[summary.index];
+      if (!clip) continue;
+      const action = entry.mixer.clipAction(clip);
+      if (wanted && !action.isRunning()) action.reset().play();
+      if (!wanted && action.isRunning()) action.stop();
+      playing ||= wanted;
+    }
+    entry.hudPlaying = playing;
   }
 
   private animate(entry: Entry, object: SceneObject): void {
@@ -257,7 +275,7 @@ export class SpatialRenderer {
     const delta = Math.min((time - this.previous) / 1000, 0.1);
     let animating = false;
     for (const entry of this.entries.values()) {
-      if (entry.mixer && entry.action && !entry.action.paused && entry.object.visible) {
+      if (entry.mixer && entry.object.visible && ((entry.action && !entry.action.paused) || entry.hudPlaying)) {
         entry.mixer.update(delta);
         animating = true;
       }

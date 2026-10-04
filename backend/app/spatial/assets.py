@@ -98,6 +98,10 @@ class AssetRegistry:
             if sha not in self._index:
                 self._index[sha] = record
                 self._save()
+            elif self._index[sha]["inspection"].get("inspector") != inspection["inspector"]:
+                # Re-inspected by a newer inspector: refresh metadata, keep the stored location.
+                self._index[sha]["inspection"] = inspection
+                self._save()
         return self.summary(record)
 
     def register_upload(self, data: bytes, filename: str) -> Dict[str, Any]:
@@ -216,7 +220,7 @@ class AssetRegistry:
             "source": record["source"],
             "label": record["label"],
             "bytes": inspection["bytes"],
-            "clips": [{"index": c["index"], "name": c["name"], "duration": c["duration"]} for c in inspection["clips"]],
+            "clips": [{"index": c["index"], "name": c["name"], "duration": c["duration"], "kind": c.get("kind", "node")} for c in inspection["clips"]],
             "joints": inspection["joints"],
             "skinned": inspection["skins"] > 0,
             "form_hud_nodes": len(inspection["form_hud_nodes"]),

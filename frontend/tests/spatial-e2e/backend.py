@@ -47,6 +47,22 @@ def build_form_library(root: Path) -> None:
         projects.link(project["id"], "production", job["id"])
         first = first or job["id"]
     projects.update(project["id"], {"best_run": first})
+    # A second project whose version holds genuine FORM export content
+    # (backend/tests/fixtures/form/README.md), registered with FORM's real schema.
+    real = REPO / "backend" / "tests" / "fixtures" / "form" / "form-atelier-hud-seed57.glb"
+    atelier = projects.create("Atelier Real Export", "real FORM geometry + Blender build/export")
+    job = production.create(BuildRequest(brief="atelier"), None, [])
+    outputs = projects.directory(atelier["id"]) / "outputs"
+    outputs.mkdir(exist_ok=True)
+    path = outputs / f"{job['id']}-character.glb"
+    data = real.read_bytes()
+    path.write_bytes(data)
+    job.update(status="completed_partial", application={
+        "paths": {"glb": str(path)}, "done": ["export", "export_readback"],
+        "export_readback": {"verified": True, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data), "skins": 1, "animations": 4}})
+    with store.connection() as db:
+        db.execute("UPDATE production_jobs SET body=? WHERE id=?", (encode(job), job["id"]))
+    projects.link(atelier["id"], "production", job["id"])
 
 
 def main() -> None:

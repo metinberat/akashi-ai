@@ -103,6 +103,39 @@ class GlbTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, "no_geometry")
 
 
+REAL_FORM_GLB = Path(__file__).resolve().parent / "fixtures" / "form" / "form-atelier-hud-seed57.glb"
+
+
+class RealFormOutputTests(unittest.TestCase):
+    """Genuine FORM export content (see tests/fixtures/form/README.md)."""
+
+    def test_inspector_understands_real_form_export(self):
+        info = glb.inspect(REAL_FORM_GLB.read_bytes())
+        self.assertEqual(info["sha256"], "3b09c515cc053c1404f0b2986a3a14a99c74273b211f3795b8e8cc5edbc7df0b")
+        self.assertEqual(info["joints"], 57)
+        self.assertEqual(len(info["form_hud_nodes"]), 3)
+        kinds = sorted(c["kind"] for c in info["clips"])
+        self.assertEqual(kinds, ["hud_morph", "hud_morph", "hud_morph", "skeletal"])
+        self.assertEqual(info["warnings"], [])
+        self.assertEqual(info["normalization"]["flags"], [])
+        self.assertTrue(1.7 < info["normalization"]["size"][1] < 2.1)
+
+    def test_real_form_character_through_the_command_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            service = SpatialLabService(Path(temp), form_library=FormLibrary(None, candidates=[]))
+            session = service.create_session()["session"]["id"]
+            asset = service.assets.register_upload(REAL_FORM_GLB.read_bytes(), "form-character.glb")
+            asyncio.run(service.submit(session, {"type": "scene.add_asset", "asset_id": asset["asset_id"]}, {"kind": "ui", "provider": "t"}))
+            played = asyncio.run(service.interpret(session, "play the animation"))
+            obj = next(iter(service.session(session).history.state["objects"].values()))
+            self.assertEqual(obj["animation"]["clip"], "AKASHI Practice RigAction", played["reply"])
+            asyncio.run(service.interpret(session, "hide its HUD"))
+            asyncio.run(service.interpret(session, "show the rig"))
+            obj = next(iter(service.session(session).history.state["objects"].values()))
+            self.assertEqual((obj["display"]["form_hud"], obj["display"]["skeleton"]), (False, True))
+            self.assertTrue(service.verify_replay(session)["verified"])
+
+
 class FormLibraryContractTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

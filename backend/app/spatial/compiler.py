@@ -247,17 +247,22 @@ def compile_request(request: Any, ctx: CompileContext) -> Prepared:
         speed = request.speed if request.speed is not None else animation["speed"]
         if request.action == "play":
             clips = obj["asset"].get("clips", [])
+            # FORM HUD energy (shape keys on HUD rings) plays with VFX, not as the character's animation.
+            playable = [c for c in clips if c.get("kind") != "hud_morph"]
+            skeletal = [c for c in playable if c.get("kind") == "skeletal"]
             if request.clip:
-                clip = match_clip(request.clip, clips, obj["label"])
+                clip = match_clip(request.clip, playable or clips, obj["label"])
             elif animation["clip"]:
                 clip = animation["clip"]
-            elif len(clips) == 1:
-                clip = clips[0]["name"]
-            elif not clips:
-                raise CommandRejected("no_clips", f"{obj['label']} has no animation clips.", {"available": []})
+            elif len(skeletal) == 1:
+                clip = skeletal[0]["name"]
+            elif len(playable) == 1:
+                clip = playable[0]["name"]
+            elif not playable:
+                raise CommandRejected("no_clips", f"{obj['label']} has no character animation clips.", {"available": [c["name"] for c in clips]})
             else:
                 raise Clarification("clip_choice", f"{obj['label']} has several clips. Which one?",
-                                    [{"id": c["name"], "label": c["name"], "why": "clip"} for c in clips])
+                                    [{"id": c["name"], "label": c["name"], "why": c.get("kind", "clip")} for c in playable])
             prepared.commands = [{"type": "object.animation", "object_id": obj["id"], "clip": clip, "playing": True, "speed": speed}]
         elif request.action == "pause":
             if not animation["clip"]:

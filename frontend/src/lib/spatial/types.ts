@@ -7,7 +7,7 @@ export type Quat = [number, number, number, number];
 
 export type Transform = { position: Vec3; rotation: Quat; scale: number };
 
-export type AssetClip = { index: number; name: string; duration: number };
+export type AssetClip = { index: number; name: string; duration: number; kind?: "skeletal" | "hud_morph" | "morph" | "node" };
 
 export type FormProvenance = {
   project_id: string;

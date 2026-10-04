@@ -135,10 +135,11 @@ export function InspectorPanel({ object, measured, busy, onRequest, onRemove }: 
     </div>
     <div className="spatial-control-group">
       <p className="spatial-label">ANIMATION</p>
-      {asset.clips.length === 0 ? <p className="spatial-muted">This asset has no animation clips.</p> : <ul className="spatial-clips">{asset.clips.map((clip) => {
+      {asset.clips.some((clip) => clip.kind === "hud_morph") && <p className="spatial-muted">FORM HUD energy ({asset.clips.filter((clip) => clip.kind === "hud_morph").length} shape-key clips) loops while FORM HUD and VFX are on.</p>}
+      {asset.clips.filter((clip) => clip.kind !== "hud_morph").length === 0 ? <p className="spatial-muted">This asset has no character animation clips.</p> : <ul className="spatial-clips">{asset.clips.filter((clip) => clip.kind !== "hud_morph").map((clip) => {
         const active = animation.clip === clip.name;
         return <li key={clip.index}>
-          <span>{clip.name}<small>{fmt(clip.duration, 1)} s</small></span>
+          <span>{clip.name}<small>{clip.kind === "skeletal" ? "rig · " : clip.kind === "morph" ? "shape keys · " : ""}{fmt(clip.duration, 1)} s</small></span>
           <button type="button" disabled={busy} aria-label={`${active && animation.playing ? "Pause" : "Play"} ${clip.name}`}
             onClick={() => onRequest(active && animation.playing ? { type: "animation.control", target, action: "pause" } : { type: "animation.control", target, action: "play", clip: clip.name })}>
             {active && animation.playing ? "Pause" : "Play"}

@@ -24,7 +24,7 @@ from app.history.canonical import quantize
 MAX_GLB_BYTES = 48 * 1024 * 1024  # Below the desktop IPC response limit (60 MiB).
 MAX_JSON_BYTES = 16 * 1024 * 1024
 MAX_ELEMENTS = 4_000_000
-INSPECTOR_VERSION = "spatial-glb-1"
+INSPECTOR_VERSION = "spatial-glb-2"
 TARGET_HEIGHT = 1.6
 NATIVE_RANGE = (0.2, 3.0)
 
@@ -413,6 +413,20 @@ def inspect(data: bytes) -> Dict[str, Any]:
             "targets_joints": bool(targets & set(joint_nodes)),
         })
     hud_nodes = [names[i] for i in range(len(nodes)) if FORM_HUD_NODE.match(names[i])]
+    hud_indices = {i for i in range(len(nodes)) if FORM_HUD_NODE.match(names[i])}
+    for clip, animation in zip(clips, document.get("animations", [])):
+        targets = {c.get("target", {}).get("node") for c in animation.get("channels", [])} - {None}
+        paths = set(clip["paths"])
+        if clip["targets_joints"]:
+            kind = "skeletal"
+        elif paths == {"weights"} and targets and targets <= hud_indices:
+            kind = "hud_morph"  # FORM HUD energy flow (shape keys on hud-ring meshes)
+        elif paths == {"weights"}:
+            kind = "morph"
+        else:
+            kind = "node"
+        clip["kind"] = kind
+        clip["targets"] = sorted(names[t] for t in targets if isinstance(t, int))[:8]
     warnings: List[str] = []
     unbound = [names[i] for i in worlds if "mesh" in nodes[i] and "skin" not in nodes[i]
                and any("JOINTS_0" in p["attributes"] for p in document["meshes"][nodes[i]["mesh"]]["primitives"])]

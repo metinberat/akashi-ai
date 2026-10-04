@@ -17,13 +17,14 @@
        {
         "duration": 1.0,
         "index": 0,
+        "kind": "skeletal",
         "name": "Calibration Sway"
        }
       ],
       "form": null,
       "form_hud_nodes": 0,
       "format": "glb",
-      "inspector": "spatial-glb-1",
+      "inspector": "spatial-glb-2",
       "joints": 3,
       "label": "Calibration block 1.70 m (synthetic)",
       "normalization": {
@@ -78,11 +79,11 @@
     },
     "type": "object.add"
    },
-   "digest_after": "sha256:11ac3432c0c27ee73b285663183ada7f7e8072dfdc6c443fb93b6f069c298ef3",
+   "digest_after": "sha256:0efe94ecf54720b58290e7d50695da7d31c3e023e5e60f9c616ed7d752c3e137",
    "digest_before": "sha256:4bb76fdbfe9ac1b7f19bb945a18356cf9b9c1522c2b072cd9b15bf4e03037259",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:af1e155a67c32efadbd67b129df2873a629eac7fb0ef11c5c348e8e37250ee81",
+   "hash": "sha256:003b6643f1accdf46433bba7d3a10e68e19156df0b89e78e2cde6da24b1a9ceb",
    "id": "event-0001",
    "kind": "command",
    "origin": {
@@ -104,13 +105,14 @@
         {
          "duration": 1.0,
          "index": 0,
+         "kind": "skeletal",
          "name": "Calibration Sway"
         }
        ],
        "form": null,
        "form_hud_nodes": 0,
        "format": "glb",
-       "inspector": "spatial-glb-1",
+       "inspector": "spatial-glb-2",
        "joints": 3,
        "label": "Calibration block 1.70 m (synthetic)",
        "normalization": {
@@ -205,11 +207,11 @@
     ],
     "type": "selection.set"
    },
-   "digest_after": "sha256:8f1a76cd840e343a0dd1cdfdc82a06141c9bd59648ac3840a715c720fe280a9a",
-   "digest_before": "sha256:11ac3432c0c27ee73b285663183ada7f7e8072dfdc6c443fb93b6f069c298ef3",
+   "digest_after": "sha256:fc9f363c4146c44cf5bdd6a2cfcd91c092f39f442556317bd2b8861e4078e750",
+   "digest_before": "sha256:0efe94ecf54720b58290e7d50695da7d31c3e023e5e60f9c616ed7d752c3e137",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:5851d9006f07db5bfbf5867834436b85ae52a8621279c0cf1c7dce37b082412f",
+   "hash": "sha256:882d3344c8d6b062af1932b13b628c4c9cb805e67443ed4edf4cd7601a331725",
    "id": "event-0002",
    "kind": "command",
    "origin": {
@@ -228,7 +230,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:af1e155a67c32efadbd67b129df2873a629eac7fb0ef11c5c348e8e37250ee81",
+   "prev_hash": "sha256:003b6643f1accdf46433bba7d3a10e68e19156df0b89e78e2cde6da24b1a9ceb",
    "redoes": null,
    "request": {
     "fixture": "calibration",
@@ -261,13 +263,14 @@
        {
         "duration": 1.0,
         "index": 0,
+        "kind": "skeletal",
         "name": "Calibration Sway"
        }
       ],
       "form": null,
       "form_hud_nodes": 0,
       "format": "glb",
-      "inspector": "spatial-glb-1",
+      "inspector": "spatial-glb-2",
       "joints": 3,
       "label": "Calibration block 1.70 m (synthetic)",
       "normalization": {
@@ -322,11 +325,11 @@
     },
     "type": "object.add"
    },
-   "digest_after": "sha256:97b02f25bcc913477fa2c0f5ef72a6af6d99f069d8149617bb0da33cf896c300",
-   "digest_before": "sha256:8f1a76cd840e343a0dd1cdfdc82a06141c9bd59648ac3840a715c720fe280a9a",
+   "digest_after": "sha256:ccbb0d1505f4d3b9429f822b56fd0c977c26f56e5226601b609709fbc9dad1cc",
+   "digest_before": "sha256:fc9f363c4146c44cf5bdd6a2cfcd91c092f39f442556317bd2b8861e4078e750",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:8e1a66c762f5f5a0d67413942fa82683e8bd2b490b444d9d9e4b26745f3ce2f9",
+   "hash": "sha256:3224654673378f986ea84143b21877b12ca9ade8bda95ee8d0d1d9cab495cb5d",
    "id": "event-0003",
    "kind": "command",
    "origin": {
@@ -348,13 +351,14 @@
         {
          "duration": 1.0,
          "index": 0,
+         "kind": "skeletal",
          "name": "Calibration Sway"
         }
        ],
        "form": null,
        "form_hud_nodes": 0,
        "format": "glb",
-       "inspector": "spatial-glb-1",
+       "inspector": "spatial-glb-2",
        "joints": 3,
        "label": "Calibration block 1.70 m (synthetic)",
        "normalization": {
@@ -427,7 +431,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:5851d9006f07db5bfbf5867834436b85ae52a8621279c0cf1c7dce37b082412f",
+   "prev_hash": "sha256:882d3344c8d6b062af1932b13b628c4c9cb805e67443ed4edf4cd7601a331725",
    "redoes": null,
    "request": {
     "fixture": "calibration",
@@ -453,11 +457,11 @@
     ],
     "type": "selection.set"
    },
-   "digest_after": "sha256:a579e599d554b9374ef977282174ed61c92c066c63a1c86bb970d9c3b8f9110b",
-   "digest_before": "sha256:97b02f25bcc913477fa2c0f5ef72a6af6d99f069d8149617bb0da33cf896c300",
+   "digest_after": "sha256:5079fe07a5f53cd51544062d816168a909094c24fca03e71b2cdf45ea4989349",
+   "digest_before": "sha256:ccbb0d1505f4d3b9429f822b56fd0c977c26f56e5226601b609709fbc9dad1cc",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:d275b52a38754cc5d54e53272b7f02d182a727e80d22b13467881c453af77ee5",
+   "hash": "sha256:cce8f1b3cf2bf72caf65a6293e8fc09c01055633df41d103927dc22838cec9ce",
    "id": "event-0004",
    "kind": "command",
    "origin": {
@@ -478,7 +482,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:8e1a66c762f5f5a0d67413942fa82683e8bd2b490b444d9d9e4b26745f3ce2f9",
+   "prev_hash": "sha256:3224654673378f986ea84143b21877b12ca9ade8bda95ee8d0d1d9cab495cb5d",
    "redoes": null,
    "request": {
     "fixture": "calibration",
@@ -516,11 +520,11 @@
     },
     "type": "object.transform"
    },
-   "digest_after": "sha256:8dea0343e3687fda74e53e1deab1a7d09e1e219200694118c684c0beb28656b3",
-   "digest_before": "sha256:a579e599d554b9374ef977282174ed61c92c066c63a1c86bb970d9c3b8f9110b",
+   "digest_after": "sha256:d4993815cb545d9603565b19efdcb968b834d4f1395db7cee66fc906c2a0d472",
+   "digest_before": "sha256:5079fe07a5f53cd51544062d816168a909094c24fca03e71b2cdf45ea4989349",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:06209a1542de38fcec3c6ff6828f014741f35f5cc1c99e1d260ff204debfaf7d",
+   "hash": "sha256:7674c314ab472b08ed46e6d77910964bea833f5e27473ab9f6a0c7acfa3314f0",
    "id": "event-0005",
    "kind": "command",
    "origin": {
@@ -550,7 +554,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:d275b52a38754cc5d54e53272b7f02d182a727e80d22b13467881c453af77ee5",
+   "prev_hash": "sha256:cce8f1b3cf2bf72caf65a6293e8fc09c01055633df41d103927dc22838cec9ce",
    "redoes": null,
    "request": {
     "axis": "y",
@@ -592,11 +596,11 @@
     },
     "type": "object.transform"
    },
-   "digest_after": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
-   "digest_before": "sha256:8dea0343e3687fda74e53e1deab1a7d09e1e219200694118c684c0beb28656b3",
+   "digest_after": "sha256:81299ff6ba27178b306c9b6704a13b1bb4b45ffb68417ac06330fd2c9c059176",
+   "digest_before": "sha256:d4993815cb545d9603565b19efdcb968b834d4f1395db7cee66fc906c2a0d472",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:f13992faf2e3c039a5f080f609797e8a1b3492253eb25932dfaeeabbd364ac8d",
+   "hash": "sha256:c2aba50cbf4fa32adc4c0e37f6978b1d6ebd1ab8bfffb25e4ef7e9843fd62685",
    "id": "event-0006",
    "kind": "command",
    "origin": {
@@ -616,7 +620,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:06209a1542de38fcec3c6ff6828f014741f35f5cc1c99e1d260ff204debfaf7d",
+   "prev_hash": "sha256:7674c314ab472b08ed46e6d77910964bea833f5e27473ab9f6a0c7acfa3314f0",
    "redoes": null,
    "request": {
     "axis": "y",
@@ -645,11 +649,11 @@
     "skeleton": true,
     "type": "object.display"
    },
-   "digest_after": "sha256:ea9803f267ac95dfb4bf290938975f625b41d4baa1ac170f4421c8f819df6c5d",
-   "digest_before": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
+   "digest_after": "sha256:ab986f6bccd2fa4bd7d22d24953810289fbd6fc5faed6f12ac53801531153427",
+   "digest_before": "sha256:81299ff6ba27178b306c9b6704a13b1bb4b45ffb68417ac06330fd2c9c059176",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:f185d1296b4e8501107f9250d6c0bd833ca61d41a273e129762ae6c774ec845e",
+   "hash": "sha256:1370d33ed5ddef919e8b4140c75eb1233a13126d2c7f63878099787739ac4ffd",
    "id": "event-0007",
    "kind": "command",
    "origin": {
@@ -669,7 +673,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:f13992faf2e3c039a5f080f609797e8a1b3492253eb25932dfaeeabbd364ac8d",
+   "prev_hash": "sha256:c2aba50cbf4fa32adc4c0e37f6978b1d6ebd1ab8bfffb25e4ef7e9843fd62685",
    "redoes": null,
    "request": {
     "skeleton": true,
@@ -694,11 +698,11 @@
    "command": {
     "type": "history.undo"
    },
-   "digest_after": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
-   "digest_before": "sha256:ea9803f267ac95dfb4bf290938975f625b41d4baa1ac170f4421c8f819df6c5d",
+   "digest_after": "sha256:81299ff6ba27178b306c9b6704a13b1bb4b45ffb68417ac06330fd2c9c059176",
+   "digest_before": "sha256:ab986f6bccd2fa4bd7d22d24953810289fbd6fc5faed6f12ac53801531153427",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:12c59921a39631925c8d5bc36181b15eb5e8cb88e8f5c87f0f430205b0edb0ce",
+   "hash": "sha256:a1856c2fc50928c3bdfe4b0fc26de0b11c2752fe38cb2bc32ebc565ba523685e",
    "id": "event-0008",
    "kind": "undo",
    "origin": {
@@ -718,7 +722,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:f185d1296b4e8501107f9250d6c0bd833ca61d41a273e129762ae6c774ec845e",
+   "prev_hash": "sha256:1370d33ed5ddef919e8b4140c75eb1233a13126d2c7f63878099787739ac4ffd",
    "redoes": null,
    "request": {
     "type": "history.undo"
@@ -739,11 +743,11 @@
    "command": {
     "type": "history.undo"
    },
-   "digest_after": "sha256:8dea0343e3687fda74e53e1deab1a7d09e1e219200694118c684c0beb28656b3",
-   "digest_before": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
+   "digest_after": "sha256:d4993815cb545d9603565b19efdcb968b834d4f1395db7cee66fc906c2a0d472",
+   "digest_before": "sha256:81299ff6ba27178b306c9b6704a13b1bb4b45ffb68417ac06330fd2c9c059176",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:875604a7b0777c3f8d79a572a06394dbf98993d74c9ee9449158ebccb2d01d5e",
+   "hash": "sha256:0e0774f6aaa679d13337c87aee90a112ecb1fbc1eaae91446c48cf251803dae6",
    "id": "event-0009",
    "kind": "undo",
    "origin": {
@@ -763,7 +767,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:12c59921a39631925c8d5bc36181b15eb5e8cb88e8f5c87f0f430205b0edb0ce",
+   "prev_hash": "sha256:a1856c2fc50928c3bdfe4b0fc26de0b11c2752fe38cb2bc32ebc565ba523685e",
    "redoes": null,
    "request": {
     "type": "history.undo"
@@ -784,11 +788,11 @@
    "command": {
     "type": "history.redo"
    },
-   "digest_after": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
-   "digest_before": "sha256:8dea0343e3687fda74e53e1deab1a7d09e1e219200694118c684c0beb28656b3",
+   "digest_after": "sha256:81299ff6ba27178b306c9b6704a13b1bb4b45ffb68417ac06330fd2c9c059176",
+   "digest_before": "sha256:d4993815cb545d9603565b19efdcb968b834d4f1395db7cee66fc906c2a0d472",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:d75511b222ba3fc520c182b80dbf8696a8d8b05c974aafcaca531e2e59b11fa7",
+   "hash": "sha256:d4af0a8cab5855a006158d324f7ab9ef3434fd22ed3401f70d95696953aa4c59",
    "id": "event-0010",
    "kind": "redo",
    "origin": {
@@ -808,7 +812,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:875604a7b0777c3f8d79a572a06394dbf98993d74c9ee9449158ebccb2d01d5e",
+   "prev_hash": "sha256:0e0774f6aaa679d13337c87aee90a112ecb1fbc1eaae91446c48cf251803dae6",
    "redoes": 6,
    "request": {
     "type": "history.redo"
@@ -833,11 +837,11 @@
     "speed": 1.0,
     "type": "object.animation"
    },
-   "digest_after": "sha256:b3372bdf137a4d56d48aabceb421d4ee689fc686061c6f42e3f1bc387941ddf7",
-   "digest_before": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
+   "digest_after": "sha256:b1cc76fc10a8cbaef576e1c92746ca6f54baecbc389a82003a32d6ec820b8564",
+   "digest_before": "sha256:81299ff6ba27178b306c9b6704a13b1bb4b45ffb68417ac06330fd2c9c059176",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:c746c65c11b02f5303231c123756f82b04c613ceb451c8f0ca2a0c537d6c759e",
+   "hash": "sha256:36c4bca28a94dc668b96d54cf9f611820ef14eed288be5b95c4c2868c380b899",
    "id": "event-0011",
    "kind": "command",
    "origin": {
@@ -868,7 +872,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:d75511b222ba3fc520c182b80dbf8696a8d8b05c974aafcaca531e2e59b11fa7",
+   "prev_hash": "sha256:d4af0a8cab5855a006158d324f7ab9ef3434fd22ed3401f70d95696953aa4c59",
    "redoes": null,
    "request": {
     "action": "play",
@@ -895,11 +899,11 @@
     "hud_visible": false,
     "type": "view.set"
    },
-   "digest_after": "sha256:e6a0f8f1306a156326e140855402d5ae43b464e5df87354ab5e4fbfda580e245",
-   "digest_before": "sha256:b3372bdf137a4d56d48aabceb421d4ee689fc686061c6f42e3f1bc387941ddf7",
+   "digest_after": "sha256:2ca7caa7b23f2321927345e01f8c9bd1ea003c4a8072b96d50750aceac43bd7e",
+   "digest_before": "sha256:b1cc76fc10a8cbaef576e1c92746ca6f54baecbc389a82003a32d6ec820b8564",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:2a64517d6f004e65381b517886fc8eef0858d027f209be2fea04ca53cb68cd7e",
+   "hash": "sha256:5f6e6f3295446cb3c68c3e500445ddcaa70256322e00678b1b3748033c2a4264",
    "id": "event-0012",
    "kind": "command",
    "origin": {
@@ -917,7 +921,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:c746c65c11b02f5303231c123756f82b04c613ceb451c8f0ca2a0c537d6c759e",
+   "prev_hash": "sha256:36c4bca28a94dc668b96d54cf9f611820ef14eed288be5b95c4c2868c380b899",
    "redoes": null,
    "request": {
     "hud_visible": false,
@@ -932,7 +936,7 @@
    "undoes": null
   }
  ],
- "final_digest": "sha256:e6a0f8f1306a156326e140855402d5ae43b464e5df87354ab5e4fbfda580e245",
+ "final_digest": "sha256:2ca7caa7b23f2321927345e01f8c9bd1ea003c4a8072b96d50750aceac43bd7e",
  "final_state": {
   "objects": {
    "obj-000000000001": {
@@ -948,13 +952,14 @@
       {
        "duration": 1.0,
        "index": 0,
+       "kind": "skeletal",
        "name": "Calibration Sway"
       }
      ],
      "form": null,
      "form_hud_nodes": 0,
      "format": "glb",
-     "inspector": "spatial-glb-1",
+     "inspector": "spatial-glb-2",
      "joints": 3,
      "label": "Calibration block 1.70 m (synthetic)",
      "normalization": {
@@ -1020,13 +1025,14 @@
       {
        "duration": 1.0,
        "index": 0,
+       "kind": "skeletal",
        "name": "Calibration Sway"
       }
      ],
      "form": null,
      "form_hud_nodes": 0,
      "format": "glb",
-     "inspector": "spatial-glb-1",
+     "inspector": "spatial-glb-2",
      "joints": 3,
      "label": "Calibration block 1.70 m (synthetic)",
      "normalization": {

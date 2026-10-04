@@ -68,7 +68,7 @@ test("desktop Spatial Lab: FORM load, language, simulated-hand drag, undo, repla
   await expect(library).toContainText("Hero Prototype");
   await expect(library).toContainText("2/3 verified versions");
 
-  await library.getByRole("button", { name: "Load latest" }).click();
+  await library.locator("li", { hasText: "Hero Prototype" }).getByRole("button", { name: "Load latest" }).click();
   const label = page.locator(".spatial-object-label", { hasText: "Hero Prototype V03" });
   await expect(label).toBeVisible();
   await expect(page.getByTestId("spatial-viewport")).toHaveAttribute("data-models", "1", { timeout: 20_000 });
@@ -154,6 +154,31 @@ test("desktop Spatial Lab: FORM load, language, simulated-hand drag, undo, repla
 
   const verified = await (await request.post(`${CORE}/spatial/sessions/${await sessionId(page)}/replay/verify`, { headers: auth })).json();
   expect(verified.verified && verified.matches_live_state).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test("real FORM export renders with its 57-joint rig, HUD energy and skeletal clip", async ({ page }) => {
+  await page.setViewportSize({ width: 1680, height: 960 });
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await desktopBridge(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Spatial Lab", exact: true }).click();
+  const library = page.getByRole("region", { name: "Spatial library" });
+  const project = library.locator("li", { hasText: "Atelier Real Export" });
+  await project.getByRole("button", { name: "Load latest" }).click();
+  await expect(page.locator(".spatial-object-label", { hasText: "Atelier Real Export V01" })).toBeVisible();
+  await expect(page.getByTestId("spatial-viewport")).toHaveAttribute("data-models", "1", { timeout: 30_000 });
+  const inspector = page.getByRole("region", { name: "Object inspector" });
+  await expect(inspector).toContainText("57 joints");
+  await expect(inspector).toContainText("SHA-256 matches FORM export record");
+  await expect(inspector).toContainText("FORM HUD energy (3 shape-key clips)");
+  await say(page, "play the animation");
+  await expect(page.locator(".spatial-reply")).toContainText("Playing AKASHI Practice RigAction");
+  await say(page, "show the rig");
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: "tests/spatial-e2e/.artifacts/desktop-real-form.png" });
+  expect(await page.locator(".spatial-banner").count()).toBe(0);
   expect(errors).toEqual([]);
 });
 
