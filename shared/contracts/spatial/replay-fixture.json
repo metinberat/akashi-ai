@@ -11,7 +11,7 @@
       "speed": 1.0
      },
      "asset": {
-      "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+      "asset_id": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
       "bytes": 2200,
       "clips": [
        {
@@ -48,7 +48,7 @@
        ],
        "up_axis": "+Y (glTF)"
       },
-      "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+      "sha256": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
       "skinned": true,
       "source": "fixture",
       "triangles": 12
@@ -78,11 +78,11 @@
     },
     "type": "object.add"
    },
-   "digest_after": "sha256:ff8dc6f4890adc3c4d7f48730d2f7ba6cc8b034fb725b2636c6c7b1b4ccc97de",
+   "digest_after": "sha256:11ac3432c0c27ee73b285663183ada7f7e8072dfdc6c443fb93b6f069c298ef3",
    "digest_before": "sha256:4bb76fdbfe9ac1b7f19bb945a18356cf9b9c1522c2b072cd9b15bf4e03037259",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:464f42ce993cb94bd9747c6cf1f5cd631d2ae9ac6fd2bf702400af2214a52900",
+   "hash": "sha256:af1e155a67c32efadbd67b129df2873a629eac7fb0ef11c5c348e8e37250ee81",
    "id": "event-0001",
    "kind": "command",
    "origin": {
@@ -98,7 +98,7 @@
        "speed": 1.0
       },
       "asset": {
-       "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+       "asset_id": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
        "bytes": 2200,
        "clips": [
         {
@@ -135,7 +135,7 @@
         ],
         "up_axis": "+Y (glTF)"
        },
-       "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+       "sha256": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
        "skinned": true,
        "source": "fixture",
        "triangles": 12
@@ -205,11 +205,11 @@
     ],
     "type": "selection.set"
    },
-   "digest_after": "sha256:00cb798a700cfc1b2481c21c3d31e90ac27ba3aab0bae602c0e9ee5b21706d38",
-   "digest_before": "sha256:ff8dc6f4890adc3c4d7f48730d2f7ba6cc8b034fb725b2636c6c7b1b4ccc97de",
+   "digest_after": "sha256:8f1a76cd840e343a0dd1cdfdc82a06141c9bd59648ac3840a715c720fe280a9a",
+   "digest_before": "sha256:11ac3432c0c27ee73b285663183ada7f7e8072dfdc6c443fb93b6f069c298ef3",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:0fa6686af9cb58e259f4732c4160f12127c52d2c3bfc6bdd7e76f8f600f7c000",
+   "hash": "sha256:5851d9006f07db5bfbf5867834436b85ae52a8621279c0cf1c7dce37b082412f",
    "id": "event-0002",
    "kind": "command",
    "origin": {
@@ -228,7 +228,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:464f42ce993cb94bd9747c6cf1f5cd631d2ae9ac6fd2bf702400af2214a52900",
+   "prev_hash": "sha256:af1e155a67c32efadbd67b129df2873a629eac7fb0ef11c5c348e8e37250ee81",
    "redoes": null,
    "request": {
     "fixture": "calibration",
@@ -255,7 +255,7 @@
       "speed": 1.0
      },
      "asset": {
-      "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+      "asset_id": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
       "bytes": 2200,
       "clips": [
        {
@@ -292,7 +292,7 @@
        ],
        "up_axis": "+Y (glTF)"
       },
-      "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+      "sha256": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
       "skinned": true,
       "source": "fixture",
       "triangles": 12
@@ -322,11 +322,11 @@
     },
     "type": "object.add"
    },
-   "digest_after": "sha256:4d602a2dc47f036212bd4078bb7700c704a470478d25fec87a64d21562339178",
-   "digest_before": "sha256:00cb798a700cfc1b2481c21c3d31e90ac27ba3aab0bae602c0e9ee5b21706d38",
+   "digest_after": "sha256:97b02f25bcc913477fa2c0f5ef72a6af6d99f069d8149617bb0da33cf896c300",
+   "digest_before": "sha256:8f1a76cd840e343a0dd1cdfdc82a06141c9bd59648ac3840a715c720fe280a9a",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:11cc1a3201c642c05519c15e3b28f451904675ff5e9f2046ab5fe35d1c3e811c",
+   "hash": "sha256:8e1a66c762f5f5a0d67413942fa82683e8bd2b490b444d9d9e4b26745f3ce2f9",
    "id": "event-0003",
    "kind": "command",
    "origin": {
@@ -342,7 +342,7 @@
        "speed": 1.0
       },
       "asset": {
-       "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+       "asset_id": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
        "bytes": 2200,
        "clips": [
         {
@@ -379,7 +379,7 @@
         ],
         "up_axis": "+Y (glTF)"
        },
-       "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+       "sha256": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
        "skinned": true,
        "source": "fixture",
        "triangles": 12
@@ -427,7 +427,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:0fa6686af9cb58e259f4732c4160f12127c52d2c3bfc6bdd7e76f8f600f7c000",
+   "prev_hash": "sha256:5851d9006f07db5bfbf5867834436b85ae52a8621279c0cf1c7dce37b082412f",
    "redoes": null,
    "request": {
     "fixture": "calibration",
@@ -453,11 +453,11 @@
     ],
     "type": "selection.set"
    },
-   "digest_after": "sha256:932024a61d24c6b61a0845e326699c7635acf72c5c5c68c9f87e93fefdda9279",
-   "digest_before": "sha256:4d602a2dc47f036212bd4078bb7700c704a470478d25fec87a64d21562339178",
+   "digest_after": "sha256:a579e599d554b9374ef977282174ed61c92c066c63a1c86bb970d9c3b8f9110b",
+   "digest_before": "sha256:97b02f25bcc913477fa2c0f5ef72a6af6d99f069d8149617bb0da33cf896c300",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:f3cb2fe81631fbdd4edbaca321c047b990d5c040ce5e2019b5f053a23ab3bad3",
+   "hash": "sha256:d275b52a38754cc5d54e53272b7f02d182a727e80d22b13467881c453af77ee5",
    "id": "event-0004",
    "kind": "command",
    "origin": {
@@ -478,7 +478,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:11cc1a3201c642c05519c15e3b28f451904675ff5e9f2046ab5fe35d1c3e811c",
+   "prev_hash": "sha256:8e1a66c762f5f5a0d67413942fa82683e8bd2b490b444d9d9e4b26745f3ce2f9",
    "redoes": null,
    "request": {
     "fixture": "calibration",
@@ -516,11 +516,11 @@
     },
     "type": "object.transform"
    },
-   "digest_after": "sha256:0ee269b4b833743049e7308d66644260dc009d291f2f0fb9fb9e6634b94ac8d6",
-   "digest_before": "sha256:932024a61d24c6b61a0845e326699c7635acf72c5c5c68c9f87e93fefdda9279",
+   "digest_after": "sha256:8dea0343e3687fda74e53e1deab1a7d09e1e219200694118c684c0beb28656b3",
+   "digest_before": "sha256:a579e599d554b9374ef977282174ed61c92c066c63a1c86bb970d9c3b8f9110b",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:cb8159ef91293d40bf53b48561b7cf73378cb2cd4e81380c2ce1c4a42d04db60",
+   "hash": "sha256:06209a1542de38fcec3c6ff6828f014741f35f5cc1c99e1d260ff204debfaf7d",
    "id": "event-0005",
    "kind": "command",
    "origin": {
@@ -550,7 +550,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:f3cb2fe81631fbdd4edbaca321c047b990d5c040ce5e2019b5f053a23ab3bad3",
+   "prev_hash": "sha256:d275b52a38754cc5d54e53272b7f02d182a727e80d22b13467881c453af77ee5",
    "redoes": null,
    "request": {
     "axis": "y",
@@ -592,11 +592,11 @@
     },
     "type": "object.transform"
    },
-   "digest_after": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
-   "digest_before": "sha256:0ee269b4b833743049e7308d66644260dc009d291f2f0fb9fb9e6634b94ac8d6",
+   "digest_after": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
+   "digest_before": "sha256:8dea0343e3687fda74e53e1deab1a7d09e1e219200694118c684c0beb28656b3",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:945a8a1be6c49ea54cd5b2cf2815a4f742516e05fa9a595da6fd5a095e08bdcc",
+   "hash": "sha256:f13992faf2e3c039a5f080f609797e8a1b3492253eb25932dfaeeabbd364ac8d",
    "id": "event-0006",
    "kind": "command",
    "origin": {
@@ -616,7 +616,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:cb8159ef91293d40bf53b48561b7cf73378cb2cd4e81380c2ce1c4a42d04db60",
+   "prev_hash": "sha256:06209a1542de38fcec3c6ff6828f014741f35f5cc1c99e1d260ff204debfaf7d",
    "redoes": null,
    "request": {
     "axis": "y",
@@ -645,11 +645,11 @@
     "skeleton": true,
     "type": "object.display"
    },
-   "digest_after": "sha256:15435f263ffa88054597693606cdeb0a65a598809d8e28491a58016973693694",
-   "digest_before": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
+   "digest_after": "sha256:ea9803f267ac95dfb4bf290938975f625b41d4baa1ac170f4421c8f819df6c5d",
+   "digest_before": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:fdf670cd397ecad63ce4bddf0406c34018bf153bfb456d663490b6b10c233e6d",
+   "hash": "sha256:f185d1296b4e8501107f9250d6c0bd833ca61d41a273e129762ae6c774ec845e",
    "id": "event-0007",
    "kind": "command",
    "origin": {
@@ -669,7 +669,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:945a8a1be6c49ea54cd5b2cf2815a4f742516e05fa9a595da6fd5a095e08bdcc",
+   "prev_hash": "sha256:f13992faf2e3c039a5f080f609797e8a1b3492253eb25932dfaeeabbd364ac8d",
    "redoes": null,
    "request": {
     "skeleton": true,
@@ -694,11 +694,11 @@
    "command": {
     "type": "history.undo"
    },
-   "digest_after": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
-   "digest_before": "sha256:15435f263ffa88054597693606cdeb0a65a598809d8e28491a58016973693694",
+   "digest_after": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
+   "digest_before": "sha256:ea9803f267ac95dfb4bf290938975f625b41d4baa1ac170f4421c8f819df6c5d",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:36f7a651d47256fb4405eb48b3b00c237d597fc7ecc7c92358807be9dd9f9709",
+   "hash": "sha256:12c59921a39631925c8d5bc36181b15eb5e8cb88e8f5c87f0f430205b0edb0ce",
    "id": "event-0008",
    "kind": "undo",
    "origin": {
@@ -718,7 +718,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:fdf670cd397ecad63ce4bddf0406c34018bf153bfb456d663490b6b10c233e6d",
+   "prev_hash": "sha256:f185d1296b4e8501107f9250d6c0bd833ca61d41a273e129762ae6c774ec845e",
    "redoes": null,
    "request": {
     "type": "history.undo"
@@ -739,11 +739,11 @@
    "command": {
     "type": "history.undo"
    },
-   "digest_after": "sha256:0ee269b4b833743049e7308d66644260dc009d291f2f0fb9fb9e6634b94ac8d6",
-   "digest_before": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
+   "digest_after": "sha256:8dea0343e3687fda74e53e1deab1a7d09e1e219200694118c684c0beb28656b3",
+   "digest_before": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:1d2fc8ffb4e8712771f7358d5a59bb1727bb4e0c3be363b99932892e6f739374",
+   "hash": "sha256:875604a7b0777c3f8d79a572a06394dbf98993d74c9ee9449158ebccb2d01d5e",
    "id": "event-0009",
    "kind": "undo",
    "origin": {
@@ -763,7 +763,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:36f7a651d47256fb4405eb48b3b00c237d597fc7ecc7c92358807be9dd9f9709",
+   "prev_hash": "sha256:12c59921a39631925c8d5bc36181b15eb5e8cb88e8f5c87f0f430205b0edb0ce",
    "redoes": null,
    "request": {
     "type": "history.undo"
@@ -784,11 +784,11 @@
    "command": {
     "type": "history.redo"
    },
-   "digest_after": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
-   "digest_before": "sha256:0ee269b4b833743049e7308d66644260dc009d291f2f0fb9fb9e6634b94ac8d6",
+   "digest_after": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
+   "digest_before": "sha256:8dea0343e3687fda74e53e1deab1a7d09e1e219200694118c684c0beb28656b3",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:e0a6c91d7a647642776afcba0f615a138e868fa64d11dc716860bdcbceb84c56",
+   "hash": "sha256:d75511b222ba3fc520c182b80dbf8696a8d8b05c974aafcaca531e2e59b11fa7",
    "id": "event-0010",
    "kind": "redo",
    "origin": {
@@ -808,7 +808,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:1d2fc8ffb4e8712771f7358d5a59bb1727bb4e0c3be363b99932892e6f739374",
+   "prev_hash": "sha256:875604a7b0777c3f8d79a572a06394dbf98993d74c9ee9449158ebccb2d01d5e",
    "redoes": 6,
    "request": {
     "type": "history.redo"
@@ -833,11 +833,11 @@
     "speed": 1.0,
     "type": "object.animation"
    },
-   "digest_after": "sha256:c32d9a883eb015f6942df9591b4ffa6a57f82bc8a89af30b7d52c0398df88957",
-   "digest_before": "sha256:5f891672b80f99a1e7c9ffec67637ac5df178f32d17abc1405f0b4bfa03533c9",
+   "digest_after": "sha256:b3372bdf137a4d56d48aabceb421d4ee689fc686061c6f42e3f1bc387941ddf7",
+   "digest_before": "sha256:c36eae378088a7a3fa5f8b65891e9a69e7328a4c9856b69d94552e52eab2ccb6",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:42937a3c8797f2ebea5964c8e9cee40e4749d0db0a69836ec173e3ec5817d8aa",
+   "hash": "sha256:c746c65c11b02f5303231c123756f82b04c613ceb451c8f0ca2a0c537d6c759e",
    "id": "event-0011",
    "kind": "command",
    "origin": {
@@ -868,7 +868,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:e0a6c91d7a647642776afcba0f615a138e868fa64d11dc716860bdcbceb84c56",
+   "prev_hash": "sha256:d75511b222ba3fc520c182b80dbf8696a8d8b05c974aafcaca531e2e59b11fa7",
    "redoes": null,
    "request": {
     "action": "play",
@@ -895,11 +895,11 @@
     "hud_visible": false,
     "type": "view.set"
    },
-   "digest_after": "sha256:18da567ade5729e043c4acdb4ef2dcbd4cc0a329bee92ddc34b597dad1f5c20b",
-   "digest_before": "sha256:c32d9a883eb015f6942df9591b4ffa6a57f82bc8a89af30b7d52c0398df88957",
+   "digest_after": "sha256:e6a0f8f1306a156326e140855402d5ae43b464e5df87354ab5e4fbfda580e245",
+   "digest_before": "sha256:b3372bdf137a4d56d48aabceb421d4ee689fc686061c6f42e3f1bc387941ddf7",
    "domain": "akashi.spatial",
    "domain_version": "spatial-scene-1",
-   "hash": "sha256:b3198b2ddcdd7a1433e30e17d41f12ec67b859e9d32a11fa785784b1a483313c",
+   "hash": "sha256:2a64517d6f004e65381b517886fc8eef0858d027f209be2fea04ca53cb68cd7e",
    "id": "event-0012",
    "kind": "command",
    "origin": {
@@ -917,7 +917,7 @@
      ]
     }
    ],
-   "prev_hash": "sha256:42937a3c8797f2ebea5964c8e9cee40e4749d0db0a69836ec173e3ec5817d8aa",
+   "prev_hash": "sha256:c746c65c11b02f5303231c123756f82b04c613ceb451c8f0ca2a0c537d6c759e",
    "redoes": null,
    "request": {
     "hud_visible": false,
@@ -932,7 +932,7 @@
    "undoes": null
   }
  ],
- "final_digest": "sha256:18da567ade5729e043c4acdb4ef2dcbd4cc0a329bee92ddc34b597dad1f5c20b",
+ "final_digest": "sha256:e6a0f8f1306a156326e140855402d5ae43b464e5df87354ab5e4fbfda580e245",
  "final_state": {
   "objects": {
    "obj-000000000001": {
@@ -942,7 +942,7 @@
      "speed": 1.0
     },
     "asset": {
-     "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+     "asset_id": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
      "bytes": 2200,
      "clips": [
       {
@@ -979,7 +979,7 @@
       ],
       "up_axis": "+Y (glTF)"
      },
-     "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+     "sha256": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
      "skinned": true,
      "source": "fixture",
      "triangles": 12
@@ -1014,7 +1014,7 @@
      "speed": 1.0
     },
     "asset": {
-     "asset_id": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+     "asset_id": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
      "bytes": 2200,
      "clips": [
       {
@@ -1051,7 +1051,7 @@
       ],
       "up_axis": "+Y (glTF)"
      },
-     "sha256": "47a3925f9fb725f438d788fe73c67f50c5fd2627596b770463e2d8dc505ebaaf",
+     "sha256": "ac1ce95c7cbb0375f986fd4d494a1dc7af695e3b455f7ba3117699f3c0c98941",
      "skinned": true,
      "source": "fixture",
      "triangles": 12

@@ -59,8 +59,11 @@ def build_glb(*, size: Sequence[float] = (0.5, 1.8, 0.3), center: Sequence[float
     if skinned:
         attributes["JOINTS_0"] = add(bytes([0, 0, 0, 0] * 8), {"componentType": 5121, "count": 8, "type": "VEC4"}, 34962)
         attributes["WEIGHTS_0"] = add(b"".join(struct.pack("<4f", 1, 0, 0, 0) for _ in range(8)), {"componentType": 5126, "count": 8, "type": "VEC4"}, 34962)
-        identity = struct.pack("<16f", 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-        inverse = add(identity * joint_count, {"componentType": 5126, "count": joint_count, "type": "MAT4"})
+        # Joint chain rests at y = 0.9, 1.2, 1.5, ...; inverse bind matrices undo each
+        # joint's world translation so the bind pose equals the authored geometry.
+        heights = [0.9 + 0.3 * j for j in range(joint_count)]
+        inverse = add(b"".join(struct.pack("<16f", 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -h, 0, 1) for h in heights),
+                      {"componentType": 5126, "count": joint_count, "type": "MAT4"})
         first = len(nodes)
         for j in range(joint_count):
             joint = {"name": form_name(f"joint{j}") if form_style else f"joint{j}", "translation": [0, 0.3 if j else 0.9, 0]}
@@ -71,8 +74,11 @@ def build_glb(*, size: Sequence[float] = (0.5, 1.8, 0.3), center: Sequence[float
         document["skins"] = [{"joints": list(range(first, first + joint_count)), "inverseBindMatrices": inverse}]
         roots.append(first)
     document["meshes"] = [{"name": mesh_name, "primitives": [{"attributes": attributes, "indices": indices}]}]
+    if hud_rings:
+        # HUD rings use their own static mesh (no joint attributes without a skin).
+        document["meshes"].append({"name": "hud-ring", "primitives": [{"attributes": {"POSITION": positions}, "indices": indices}]})
     for ring in range(hud_rings):
-        nodes.append({"name": form_name(f"hud-ring-{ring}"), "mesh": 0, "scale": [0.2, 0.02, 0.2], "translation": [0, 1.4 + ring * 0.05, 0]})
+        nodes.append({"name": form_name(f"hud-ring-{ring}"), "mesh": 1, "scale": [0.2, 0.02, 0.2], "translation": [0, 1.4 + ring * 0.05, 0]})
         roots.append(len(nodes) - 1)
     animations = []
     for clip_number, clip in enumerate(clips):

@@ -52,6 +52,18 @@ class GlbTests(unittest.TestCase):
         self.assertEqual(info["normalization"]["scale"], 1.0)
         self.assertIn("approximation", info["bounds_method"])
 
+    def test_skinned_geometry_without_skin_is_flagged(self):
+        data = build_glb(skinned=True, clips=("Idle",))
+        info = glb.inspect(data)
+        self.assertEqual(info["warnings"], [])
+        document, binary = glb.parse_container(data)
+        document["nodes"].append({"name": "stray", "mesh": 0})
+        document["scenes"][0]["nodes"].append(len(document["nodes"]) - 1)
+        payload = json.dumps(document).encode()
+        payload += b" " * ((4 - len(payload) % 4) % 4)
+        rebuilt = glb_with_json(json.loads(payload), bytes(binary))
+        self.assertIn("without a skin", glb.inspect(rebuilt)["warnings"][0])
+
     def test_normalisation_handles_units_pivot_and_orientation_without_mutation(self):
         centimetres = glb.inspect(build_glb(size=(50, 180, 30), center=(0, 90, 0)))["normalization"]
         self.assertIn("rescaled_unit_mismatch", centimetres["flags"])

@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import "./globals.css";
 import "./desktop-absolute.css";
+import "./spatial-lab.css";
 import type { Viewport } from "next";
 
 export const metadata: Metadata = {

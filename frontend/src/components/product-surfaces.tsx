@@ -351,7 +351,8 @@ type MorePanelProps = {
 };
 
 export function MorePanel({ config, presentation, moodPreference, connected, systemHealth, maintenance = [], onMoodPreference, onNavigate, onSettings }: MorePanelProps) {
-  const destinations: Array<{ view: WorkspaceView; title: string; detail: string; icon: "research" | "files" | "devices" | "tasks" }> = [
+  const destinations: Array<{ view: WorkspaceView; title: string; detail: string; icon: "research" | "files" | "devices" | "tasks" | "spatial" }> = [
+    { view: "spatial", title: "Spatial Lab", detail: "3D sahne · el hareketi · FORM", icon: "spatial" },
     { view: "research", title: "Research", detail: "Dış kanıt ve kaynak sentezi", icon: "research" },
     { view: "files", title: "Files", detail: "Belge bağlamı ve yüklemeler", icon: "files" },
     { view: "devices", title: "Linked Devices", detail: "Eşleşmiş desktop durumu", icon: "devices" },

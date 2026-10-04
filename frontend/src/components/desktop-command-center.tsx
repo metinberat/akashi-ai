@@ -54,10 +54,11 @@ type Props = {
   onSettings: () => void;
 };
 
-const navItems: Array<{ view: WorkspaceView; icon: "mic" | "chat" | "create" | "research" | "tasks" | "memory" | "files" | "devices"; label: string }> = [
+const navItems: Array<{ view: WorkspaceView; icon: "mic" | "chat" | "create" | "research" | "tasks" | "memory" | "files" | "devices" | "spatial"; label: string }> = [
   { view: "home", icon: "mic", label: "Core" },
   { view: "chat", icon: "chat", label: "Sohbet" },
   { view: "create", icon: "create", label: "Oluştur" },
+  { view: "spatial", icon: "spatial", label: "Spatial Lab" },
   { view: "research", icon: "research", label: "Araştır" },
   { view: "tasks", icon: "tasks", label: "Görevler" },
   { view: "memory", icon: "memory", label: "Hafıza" },
@@ -198,7 +199,7 @@ export function DesktopCommandCenter(props: Props) {
   };
 
   const style = { "--ak-energy": energy } as CSSProperties;
-  return <main className="desktop-command-center" data-interface="absolute" data-mood={props.mood} data-stage={stage} data-voice={props.voiceState} data-voice-session={props.fullVoiceActive ? "active" : "idle"} data-visible={pageVisible ? "true" : "false"} data-nav={navCollapsed ? "collapsed" : "open"} style={style}>
+  return <main className="desktop-command-center" data-interface="absolute" data-mood={props.mood} data-stage={stage} data-view={activeView} data-voice={props.voiceState} data-voice-session={props.fullVoiceActive ? "active" : "idle"} data-visible={pageVisible ? "true" : "false"} data-nav={navCollapsed ? "collapsed" : "open"} style={style}>
     <header className="desktop-titlebar">
       <button type="button" className="titlebar-collapse" onClick={() => setNavCollapsed((collapsed) => !collapsed)} aria-pressed={navCollapsed} aria-label={navCollapsed ? "Gezinme rayını göster" : "Gezinme rayını gizle"}><Icon name="chevron" /></button>
       <button type="button" className="desktop-brand" onClick={() => props.onNavigate("home")}><Presence compact /><span><strong>A.K.A.S.H.I</strong><small>ABSOLUTE INTELLIGENCE</small></span></button>
@@ -223,10 +224,11 @@ export function DesktopCommandCenter(props: Props) {
     </nav>
 
     <section className="desktop-center-stage">
-      <CoreVisual energy={energy} voiceState={props.voiceState} voiceLabel={props.voiceLabel} onMicrophone={props.onMicrophone} disabled={!props.nativeVoiceAvailable || !props.connected} />
+      {/* Spatial Lab owns the stage (and the GPU); the Core scene is not rendered behind it. */}
+      {activeView !== "spatial" && <CoreVisual energy={energy} voiceState={props.voiceState} voiceLabel={props.voiceLabel} onMicrophone={props.onMicrophone} disabled={!props.nativeVoiceAvailable || !props.connected} />}
       {researchResult && activeView === "home" && <DesktopResult key={researchResult.contextId} entity={researchResult} onPrompt={props.onStagePrompt} onClose={() => setDismissedResultId(researchResult.contextId)} />}
       {agentsOpen && <AgentDock runtime={props.desktopRuntime} tasks={props.tasks} connected={props.connected} onNavigate={view => { setAgentsOpen(false); props.onNavigate(view); }} onClose={() => setAgentsOpen(false)} />}
-      {stage === "workspace" && (props.activeView === "chat" ? <ChatPanel messages={props.messages} busy={props.isSending} onRetry={props.onRetry} onPrompt={props.onStagePrompt} onClose={() => props.onNavigate("home")} /> : <section className={`desktop-workspace-panel desktop-${props.activeView}-panel`}><header><div><span>WORKSPACE / {props.activeView.toUpperCase()}</span><h2>{props.activeView}</h2></div><button type="button" onClick={() => props.onNavigate("home")} aria-label="Çalışma alanını kapat">×</button></header><div className="desktop-workspace-scroll">{props.workspaceContent}</div></section>)}
+      {activeView === "spatial" ? <section className="desktop-spatial-stage" aria-label="Spatial Lab workspace">{props.workspaceContent}</section> : stage === "workspace" && (props.activeView === "chat" ? <ChatPanel messages={props.messages} busy={props.isSending} onRetry={props.onRetry} onPrompt={props.onStagePrompt} onClose={() => props.onNavigate("home")} /> : <section className={`desktop-workspace-panel desktop-${props.activeView}-panel`}><header><div><span>WORKSPACE / {props.activeView.toUpperCase()}</span><h2>{props.activeView}</h2></div><button type="button" onClick={() => props.onNavigate("home")} aria-label="Çalışma alanını kapat">×</button></header><div className="desktop-workspace-scroll">{props.workspaceContent}</div></section>)}
       <SystemInstrument telemetry={telemetry} ready={agentReady} />
       {inventoryOpen && <div className="diagnostics-drawer"><HudZone zone="left" layout={hud.layout} data={hudData} onCollapse={hud.toggleCollapsed} onPin={hud.togglePinned} onMove={hud.moveZone} onClose={hud.closeModule} /><HudZone zone="right" layout={hud.layout} data={hudData} onCollapse={hud.toggleCollapsed} onPin={hud.togglePinned} onMove={hud.moveZone} onClose={hud.closeModule} /></div>}
       <div className={`desktop-command-strip ${props.activeView === "chat" ? "expanded" : ""}`}>{props.commandStrip}</div>

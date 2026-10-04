@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- Authenticated blob previews cannot use the static Next image optimizer. */
 
+import dynamic from "next/dynamic";
 import {
   ChangeEvent,
   FormEvent,
@@ -97,6 +98,8 @@ import { observeDesktop } from "@/lib/desktop-activity";
 import { Icon, Presence, type IconName } from "@/components/identity";
 import { AutonomyHub } from "@/components/autonomy-hub";
 import { DesktopCommandCenter } from "@/components/desktop-command-center";
+// three.js and MediaPipe load only when Spatial Lab opens (client-only).
+const SpatialLab = dynamic(() => import("@/components/spatial/spatial-lab"), { ssr: false, loading: () => <div className="spatial-loading">Spatial Lab yükleniyor…</div> });
 import { Markdown } from "@/components/markdown";
 import { Modal } from "@/components/modal";
 import { clearBackendToken } from "@/lib/api";
@@ -148,6 +151,7 @@ const navigationCatalog: Record<WorkspaceView, { label: string; icon: IconName }
   files: { label: "Files", icon: "files" },
   devices: { label: "Devices", icon: "devices" },
   autonomy: { label: "Autonomy", icon: "autonomy" },
+  spatial: { label: "Spatial", icon: "spatial" },
   more: { label: "More", icon: "more" },
 };
 
@@ -168,6 +172,7 @@ const viewLabels: Record<WorkspaceView, string> = {
   files: "File Intelligence",
   devices: "Devices",
   autonomy: "Autonomy Hub",
+  spatial: "Spatial Lab",
   more: "Profile & System",
 };
 
@@ -1338,6 +1343,8 @@ export default function Home() {
     <DevicesPanel config={config} connected={backendOnline} />
   ) : activeView === "autonomy" ? (
     <AutonomyHub config={config} connected={backendOnline} />
+  ) : activeView === "spatial" ? (
+    <SpatialLab config={config} connected={backendOnline} shell="desktop" />
   ) : activeView === "more" ? (
     <MorePanel config={config} presentation={presentation} moodPreference={moodPreference} connected={backendOnline} systemHealth={systemHealth} maintenance={maintenance} onMoodPreference={updateMoodPreference} onNavigate={navigate} onSettings={() => setSettingsOpen(true)} />
   ) : null;
@@ -1752,6 +1759,7 @@ export default function Home() {
             {activeView === "tasks" && <TasksPanel config={config} connected={backendOnline} />}
             {activeView === "files" && <FilesPanel config={config} connected={backendOnline} onUseInChat={(file) => { setContextFile(file); setMode("chat"); setActiveView("chat"); }} />}
             {activeView === "devices" && <DevicesPanel config={config} connected={backendOnline} />}
+            {activeView === "spatial" && <SpatialLab config={config} connected={backendOnline} shell="web" />}
             {activeView === "more" && <MorePanel config={config} presentation={presentation} moodPreference={moodPreference} connected={backendOnline} systemHealth={systemHealth} maintenance={maintenance} onMoodPreference={updateMoodPreference} onNavigate={navigate} onSettings={() => setSettingsOpen(true)} />}
           </div>
         )}

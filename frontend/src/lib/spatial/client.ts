@@ -56,6 +56,7 @@ export interface SpatialApi {
   presence(id: string, anchors: Partial<Record<"left_hand" | "right_hand", { position: [number, number, number]; confidence: number }>>): Promise<unknown>;
   events(id: string, after?: number): Promise<{ session_id: string; revision: number; initial_state: SceneState | null; events: SpatialEvent[] }>;
   verifyReplay(id: string): Promise<{ verified: boolean; events: number; final_digest: string; live_digest: string; matches_live_state: boolean }>;
+  metrics(): Promise<{ submit_ms: { count: number; p50: number | null; p95: number | null; max: number | null }; counters: Record<string, number> }>;
   assets(): Promise<{ assets: AssetSummary[] }>;
   uploadAsset(file: File): Promise<AssetSummary>;
   assetContent(assetId: string): Promise<ArrayBuffer>;
@@ -78,6 +79,7 @@ export function spatialApi(config: BackendConfig): SpatialApi {
     presence: (id, anchors) => json(config, `/spatial/sessions/${enc(id)}/presence`, { method: "PUT", body: JSON.stringify({ anchors }) }),
     events: (id, after = 0) => json(config, `/spatial/sessions/${enc(id)}/events?after=${after}&limit=500`),
     verifyReplay: (id) => json(config, `/spatial/sessions/${enc(id)}/replay/verify`, { method: "POST" }),
+    metrics: () => json(config, "/spatial/metrics"),
     assets: () => json(config, "/spatial/assets"),
     uploadAsset: (file) => {
       const form = new FormData();

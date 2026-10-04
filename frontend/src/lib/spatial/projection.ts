@@ -7,7 +7,7 @@ import type { InteractionObject, SceneProjector } from "./gesture/interaction.ts
 
 export type CameraRig = { fov: number; position: Vec3; target: Vec3; near: number; far: number };
 
-export const DEFAULT_RIG: CameraRig = { fov: 50, position: [0, 1.05, 3.4], target: [0, 0.85, 0], near: 0.01, far: 100 };
+export const DEFAULT_RIG: CameraRig = { fov: 50, position: [0, 1.15, 4.2], target: [0, 0.9, 0], near: 0.01, far: 100 };
 
 const normalize = (v: Vec3): Vec3 => {
   const n = Math.hypot(v[0], v[1], v[2]) || 1;
@@ -23,10 +23,15 @@ export class PerspectiveProjector implements SceneProjector {
   private tanHalf: number;
 
   constructor(readonly rig: CameraRig, public aspect: number) {
+    this.setAspect(aspect);
     this.forward = normalize([rig.target[0] - rig.position[0], rig.target[1] - rig.position[1], rig.target[2] - rig.position[2]]);
     this.right = normalize(cross(this.forward, [0, 1, 0]));
     this.up = cross(this.right, this.forward);
     this.tanHalf = Math.tan((rig.fov * Math.PI) / 360);
+  }
+
+  setAspect(aspect: number): void {
+    if (Number.isFinite(aspect) && aspect > 0) this.aspect = aspect;
   }
 
   /** World point → viewport coordinates ([0,1], y down) and view depth. */

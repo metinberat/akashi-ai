@@ -12,6 +12,7 @@ export type WorkspaceView =
   | "files"
   | "devices"
   | "autonomy"
+  | "spatial"
   | "more";
 
 export type ClientPresentation = {
@@ -26,7 +27,7 @@ const presentations: Record<ClientKind, ClientPresentation> = {
   web: {
     kind: "web",
     primaryNavigation: ["home", "chat", "create", "research", "memory", "files", "more"],
-    availableWorkspaces: ["home", "chat", "create", "research", "memory", "tasks", "files", "more"],
+    availableWorkspaces: ["home", "chat", "create", "research", "memory", "tasks", "files", "spatial", "more"],
     desktopBody: "hidden",
     label: "WEB",
   },
@@ -39,8 +40,8 @@ const presentations: Record<ClientKind, ClientPresentation> = {
   },
   desktop: {
     kind: "desktop",
-    primaryNavigation: ["home", "chat", "create", "research", "tasks", "memory", "files", "devices"],
-    availableWorkspaces: ["home", "chat", "create", "research", "tasks", "memory", "files", "devices", "autonomy", "more"],
+    primaryNavigation: ["home", "chat", "create", "spatial", "research", "tasks", "memory", "files", "devices"],
+    availableWorkspaces: ["home", "chat", "create", "spatial", "research", "tasks", "memory", "files", "devices", "autonomy", "more"],
     desktopBody: "primary",
     label: "DESKTOP",
   },

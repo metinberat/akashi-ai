@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3100",
+    "prebuild": "node scripts/spatial-assets.mjs --offline",
     "build": "next build",
     "start": "serve out -l 3100",
     "lint": "eslint",
@@ -14,7 +15,9 @@
     "android:sync": "npm run build && cap sync android",
     "android:open": "cap open android",
     "ios:sync": "npm run build && cap sync ios",
-    "ios:open": "cap open ios"
+    "ios:open": "cap open ios",
+    "spatial:assets": "node scripts/spatial-assets.mjs",
+    "test:spatial": "playwright test -c playwright.spatial.config.ts"
   },
   "dependencies": {
     "@aparajita/capacitor-secure-storage": "^8.0.0",

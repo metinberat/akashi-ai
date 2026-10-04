@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 
-export type IconName = "home" | "chat" | "create" | "research" | "tasks" | "memory" | "files" | "devices" | "more" | "activity" | "settings" | "plus" | "image" | "mic" | "stop" | "arrow" | "volume" | "grid" | "pin" | "chevron" | "pulse" | "target" | "stream" | "network" | "minimize" | "maximize" | "restore" | "close" | "autonomy";
+export type IconName = "home" | "chat" | "create" | "research" | "tasks" | "memory" | "files" | "devices" | "more" | "activity" | "settings" | "plus" | "image" | "mic" | "stop" | "arrow" | "volume" | "grid" | "pin" | "chevron" | "pulse" | "target" | "stream" | "network" | "minimize" | "maximize" | "restore" | "close" | "autonomy" | "spatial";
 const paths: Record<IconName, string> = {
   home: "M4 11 12 4l8 7v9h-6v-6h-4v6H4v-9Z",
   chat: "M5 4h14v12H9l-4 4V4Z M9 8h6 M9 12h4",
@@ -30,6 +30,7 @@ const paths: Record<IconName, string> = {
   restore: "M8 4h12v12h-4 M4 8h12v12H4V8Z",
   close: "M6 6l12 12 M18 6 6 18",
   autonomy: "M12 2 20 7v10l-8 5-8-5V7Z M12 7v10 M8.5 9l7 6 M15.5 9l-7 6",
+  spatial: "M12 3 19 7v8l-7 4-7-4V7Z M5 7l7 4 7-4 M12 11v8 M2 4V2h2 M22 4V2h-2 M2 20v2h2 M22 20v2h-2",
 };
 export function Icon({ name }: { name: IconName }) {
   return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;

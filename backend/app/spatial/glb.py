@@ -413,6 +413,11 @@ def inspect(data: bytes) -> Dict[str, Any]:
             "targets_joints": bool(targets & set(joint_nodes)),
         })
     hud_nodes = [names[i] for i in range(len(nodes)) if FORM_HUD_NODE.match(names[i])]
+    warnings: List[str] = []
+    unbound = [names[i] for i in worlds if "mesh" in nodes[i] and "skin" not in nodes[i]
+               and any("JOINTS_0" in p["attributes"] for p in document["meshes"][nodes[i]["mesh"]]["primitives"])]
+    if unbound:
+        warnings.append(f"{len(unbound)} node(s) use skinned geometry without a skin (e.g. '{unbound[0]}'); rendered as static geometry.")
     normalization = normalize(low, high, skinned)
     generator = _clean_name(document["asset"].get("generator"), "unknown", 120)
     return {
@@ -439,6 +444,7 @@ def inspect(data: bytes) -> Dict[str, Any]:
         "bounds": {"min": [quantize(v) for v in low], "max": [quantize(v) for v in high]},
         "bounds_method": "bind_pose_node_transform" + ("_approximation_for_skinned_meshes" if skinned else ""),
         "normalization": normalization,
+        "warnings": warnings,
     }
 
 

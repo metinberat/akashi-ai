@@ -16,6 +16,9 @@ const eslintConfig = defineConfig([
     "android/**",
     "ios/**",
     "next-env.d.ts",
+    // Vendored MediaPipe runtime copied by scripts/spatial-assets.mjs.
+    "public/spatial/**",
+    "tests/spatial-e2e/.artifacts/**",
   ]),
 ]);
 

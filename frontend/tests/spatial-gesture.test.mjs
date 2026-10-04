@@ -155,11 +155,12 @@ test("a one-frame detector glitch is rejected before smoothing", () => {
   h.step([h.handAt(h.chest, { pinch: 1 })], 4);
   for (let i = 0; i <= 16; i += 1) h.step([h.handAt({ x: h.chest.x, y: h.chest.y - i * 0.005 }, { pinch: 1 })]);
   const path = { x: h.chest.x, y: h.chest.y - 0.08 };
-  const before = h.intents.filter((i) => i.type === "manipulation.update").at(-1).transform.position[1];
+  // Where the hand path really leads (object follows the pointer delta on its plane).
+  const limit = h.projector.toWorld(path, 0)[1] - h.projector.toWorld(h.chest, 0)[1];
   h.step([h.handAt({ x: path.x, y: path.y - 0.15 }, { pinch: 1 })]); // single bad frame
   h.step([h.handAt(path, { pinch: 1 })], 6);
   for (const update of h.intents.filter((i) => i.type === "manipulation.update")) {
-    assert.ok(update.transform.position[1] < before + 0.02, `object twitched to ${update.transform.position[1]}`);
+    assert.ok(update.transform.position[1] <= limit + 0.02, `object twitched to ${update.transform.position[1]} (path ${limit})`);
   }
   h.step([h.handAt(path)], 6);
   const end = h.intents.find((i) => i.type === "manipulation.end");
