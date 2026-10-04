@@ -199,11 +199,49 @@ REQUEST_TYPES = sorted(model.model_fields["type"].annotation.__args__[0] for mod
 CONFIRM_REQUESTS = {"scene.remove"}
 
 
+Modality = Literal["gesture", "touch", "pointer", "language", "voice", "ui"]
+
+
+class RemoteProvenance(Strict):
+    """Which device, session and message produced a remote change (set by Core, never by the client)."""
+
+    device_id: str = Field(min_length=1, max_length=64)
+    device_name: str = Field(min_length=1, max_length=100)
+    device_type: str = Field(min_length=1, max_length=40)
+    session: str = Field(pattern=r"^rs-[0-9a-f]{16}$")
+    session_kind: Literal["device", "owner"]
+    modality: Modality
+    message_id: str = Field(min_length=8, max_length=64)
+    seq: int = Field(ge=1)
+    sent_at_ms: float = Field(ge=0)
+    received_at: str = Field(min_length=1, max_length=40)
+    transport: str = Field(min_length=1, max_length=20)
+
+
+class ApprovalProvenance(Strict):
+    """Who confirmed a change that required confirmation."""
+
+    decision: Literal["approved"]
+    by: Literal["owner", "device", "requester"]
+    device_id: Optional[str] = Field(default=None, max_length=64)
+    device_name: Optional[str] = Field(default=None, max_length=100)
+    session: Optional[str] = Field(default=None, max_length=32)
+    at: str = Field(min_length=1, max_length=40)
+
+
 class Origin(Strict):
     kind: Literal["gesture", "language", "ui", "tool", "replay", "system", "remote"]
     provider: str = Field(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9_.:/+\- ]+$")
     interaction_id: Optional[str] = Field(default=None, max_length=128)
     input: Optional[Dict[str, Any]] = None
+    remote: Optional[RemoteProvenance] = None
+    approval: Optional[ApprovalProvenance] = None
+
+    @model_validator(mode="after")
+    def remote_matches_kind(self) -> "Origin":
+        if (self.kind == "remote") != (self.remote is not None):
+            raise ValueError("A remote origin carries remote provenance, and only a remote origin does.")
+        return self
 
 
 def parse_request(value: Any):

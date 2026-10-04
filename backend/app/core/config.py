@@ -97,6 +97,11 @@ class Settings:
     spatial_dir: Path = BACKEND_DIR / "data" / "private" / "spatial"
     spatial_form_data_dir: Optional[Path] = None
     spatial_interpreter: str = "auto"
+    # None: next to spatial_dir (keeps tests and custom data roots self-contained).
+    remote_dir: Optional[Path] = None
+    # Provider-independent: any HTTPS origins that reach this Core (LAN reverse
+    # proxy, VPN, tunnel). Advertised to paired devices for failover; optional.
+    remote_endpoints: tuple[str, ...] = ()
 
     phone_enabled: bool = False
     outbound_calls_enabled: bool = False
@@ -247,6 +252,11 @@ def get_settings() -> Settings:
         spatial_form_data_dir=(Path(os.environ["AKASHI_FORM_DATA_DIR"].strip()).expanduser().resolve()
                                if (os.getenv("AKASHI_FORM_DATA_DIR") or "").strip() else None),
         spatial_interpreter="rules" if os.getenv("AKASHI_SPATIAL_INTERPRETER", "auto").strip().lower() == "rules" else "auto",
+        remote_dir=Path(os.environ["REMOTE_DIR"]).expanduser().resolve() if os.getenv("REMOTE_DIR", "").strip() else None,
+        remote_endpoints=tuple(
+            item.strip().rstrip("/") for item in os.getenv("AKASHI_REMOTE_ENDPOINTS", "").split(",")
+            if item.strip().startswith(("https://", "http://"))
+        ),
         phone_enabled=os.getenv("AKASHI_PHONE_ENABLED", "false").strip().casefold() in {"1", "true", "yes", "on"},
         outbound_calls_enabled=os.getenv("AKASHI_OUTBOUND_CALLS_ENABLED", "false").strip().casefold() in {"1", "true", "yes", "on"},
         livekit_url=(os.getenv("LIVEKIT_URL") or "").strip().rstrip("/") or None,

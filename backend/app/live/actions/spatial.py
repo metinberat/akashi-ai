@@ -13,6 +13,7 @@ from app.core.brain import BrainResponse
 from app.core.intent import analyze_intent
 from app.live.actions.base import LiveAction, LiveActionRuntime
 from app.live.models import ActionMatch, LiveActionDefinition
+from app.remote import context as remote_context
 from app.spatial.model import summarize
 
 
@@ -33,10 +34,18 @@ class SpatialSceneAction(LiveAction):
         service = self.runtime.spatial
         if service is None:
             return None
-        session = service.active_session()
+        remote = remote_context.current()
+        session = None
+        if remote and remote.get("spatial"):
+            try:
+                session = service.session(remote["spatial"])
+            except Exception:
+                session = None
+        session = session or service.active_session()
         if session is None:
             return None
-        if service.rules.interpret(message, summarize(session.history.state)) is None:
+        summary = summarize(session.history.state)
+        if service.rules.interpret(message, summary) is None and service.rules.provenance_query(message, summary) is None:
             return None
         return ActionMatch(score=115, arguments={"session_id": session.id}, approved=False)
 
@@ -44,7 +53,9 @@ class SpatialSceneAction(LiveAction):
         service = self.runtime.spatial
         if service is None:
             raise RuntimeError("Spatial Lab is not configured.")
-        outcome = await service.interpret(match.arguments["session_id"], message, provider="chat", voice=voice)
+        remote = remote_context.current()
+        outcome = await service.interpret(match.arguments["session_id"], message, provider="chat", voice=voice,
+                                          remote=remote.get("provenance") if remote else None)
         text = outcome.get("reply") or "Spatial Lab did not change."
         intent = analyze_intent(message)
         self.runtime.brain.record_runtime_exchange(session_id, message, text, intent, mode)  # type: ignore[arg-type]

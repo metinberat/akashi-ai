@@ -55,13 +55,27 @@ def _token_digest(token: str, salt: bytes) -> str:
     return hashlib.pbkdf2_hmac("sha256", token.encode("utf-8"), salt, 180_000).hex()
 
 
+ROLES = ("agent", "presence")
+
+
 class DeviceStore:
-    """JSON registry containing only salted device-token hashes."""
+    """JSON registry containing only salted device-token hashes and public keys.
+
+    Two device roles share this registry (one owner of device identity):
+
+    * ``agent`` — the Windows Agent; ``capabilities`` lists the actions it may
+      execute and ``queue_action`` targets it.
+    * ``presence`` — a remote presence node (phone, laptop) used by
+      ``app.remote``. It holds owner-granted ``grants`` (scopes), authenticates
+      with a P-256 public key (or, weaker, a bearer secret) and can never be the
+      target of an agent action.
+    """
 
     def __init__(self, file_path: Path, code_ttl: int, online_ttl: int) -> None:
         self.file_path = file_path
         self.code_ttl = max(60, code_ttl)
         self.online_ttl = max(15, online_ttl)
+        self.version = 0
         self._lock = Lock()
         self._pair_attempts = deque(maxlen=31)
         self.file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -92,6 +106,7 @@ class DeviceStore:
         temporary = self.file_path.with_suffix(f"{self.file_path.suffix}.tmp")
         temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         temporary.replace(self.file_path)
+        self.version += 1
 
     @staticmethod
     def _public_device(device: Dict[str, Any], online_ttl: int) -> Dict[str, Any]:
@@ -105,10 +120,17 @@ class DeviceStore:
         return {
             key: deepcopy(value)
             for key, value in device.items()
-            if key not in {"token_hash", "token_salt"}
-        } | {"online": online}
+            if key not in {"token_hash", "token_salt", "public_key"}
+        } | {"online": online, "role": device.get("role", "agent"), "grants": list(device.get("grants", []))}
 
-    def create_pairing_code(self) -> Dict[str, Any]:
+    def create_pairing_code(
+        self,
+        role: str = "agent",
+        grants: Optional[List[str]] = None,
+        label: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        if role not in ROLES:
+            raise ValueError("Unknown device role.")
         alphabet = string.ascii_uppercase + string.digits
         code = "".join(secrets.choice(alphabet) for _ in range(10))
         expires = utc_now() + timedelta(seconds=self.code_ttl)
@@ -117,6 +139,9 @@ class DeviceStore:
             "code_hash": hashlib.sha256(code.encode("utf-8")).hexdigest(),
             "created_at": utc_text(),
             "expires_at": utc_text(expires),
+            "role": role,
+            "grants": sorted(set(grants or [])) if role == "presence" else [],
+            "label": (label or "").strip()[:100] or None,
         }
         with self._lock:
             data = self._read()
@@ -127,7 +152,7 @@ class DeviceStore:
             ]
             data["pairing_codes"].append(record)
             self._write(data)
-        return {"code": code, "expires_at": record["expires_at"]}
+        return {"code": code, "expires_at": record["expires_at"], "role": role, "grants": list(record["grants"])}
 
     def pair(
         self,
@@ -135,7 +160,10 @@ class DeviceStore:
         name: str,
         device_type: str,
         capabilities: List[str],
-    ) -> Tuple[Dict[str, Any], str]:
+        public_key: Optional[Dict[str, str]] = None,
+        key_id: Optional[str] = None,
+        expected_role: str = "agent",
+    ) -> Tuple[Dict[str, Any], Optional[str]]:
         code_hash = hashlib.sha256(code.strip().upper().encode("utf-8")).hexdigest()
         with self._lock:
             data = self._read()
@@ -155,21 +183,36 @@ class DeviceStore:
             self._pair_attempts.append(now)
             if match is None:
                 raise PermissionError("Pairing code is invalid or expired.")
+            role = match.get("role", "agent")
+            if role != expected_role:
+                # A code minted for a remote presence device cannot pair a Windows
+                # Agent (and vice versa); the code stays valid for its real use.
+                raise PermissionError("Pairing code is invalid or expired.")
             data["pairing_codes"] = [item for item in data["pairing_codes"] if item is not match]
-            token = secrets.token_urlsafe(48)
-            salt = secrets.token_bytes(16)
             now = utc_text()
-            device = {
+            device: Dict[str, Any] = {
                 "id": str(uuid.uuid4()),
-                "name": name.strip()[:100] or "AKASHI Desktop",
+                "name": name.strip()[:100] or ("AKASHI Desktop" if role == "agent" else "Remote device"),
                 "device_type": device_type.strip().lower()[:40] or "desktop",
-                "capabilities": sorted({item.strip() for item in capabilities if item.strip()}),
+                "role": role,
+                # Agent capabilities are executable action names; a presence device has none.
+                "capabilities": sorted({item.strip() for item in capabilities if item.strip()}) if role == "agent" else [],
+                "grants": list(match.get("grants", [])) if role == "presence" else [],
                 "created_at": now,
                 "last_seen": now,
                 "revoked": False,
-                "token_salt": salt.hex(),
-                "token_hash": _token_digest(token, salt),
             }
+            token: Optional[str] = None
+            if role == "presence" and public_key is not None:
+                device["credential"] = "key"
+                device["public_key"] = dict(public_key)
+                device["key_id"] = key_id
+            else:
+                token = secrets.token_urlsafe(48)
+                salt = secrets.token_bytes(16)
+                device["credential"] = "secret"
+                device["token_salt"] = salt.hex()
+                device["token_hash"] = _token_digest(token, salt)
             data["devices"].append(device)
             self._write(data)
         return self._public_device(device, self.online_ttl), token
@@ -194,6 +237,43 @@ class DeviceStore:
             if touch:
                 device["last_seen"] = utc_text()
                 self._write(data)
+            return self._public_device(device, self.online_ttl)
+
+    def get(self, device_id: str) -> Optional[Dict[str, Any]]:
+        with self._lock:
+            device = next((item for item in self._read()["devices"] if item.get("id") == device_id), None)
+        return self._public_device(device, self.online_ttl) if device else None
+
+    def presence_credential(self, device_id: str) -> Optional[Dict[str, Any]]:
+        """Internal: the verification material of a live presence device (never returned by the API)."""
+        if not isinstance(device_id, str) or len(device_id) > 128:
+            return None
+        with self._lock:
+            device = next((item for item in self._read()["devices"] if item.get("id") == device_id), None)
+        if device is None or device.get("revoked") or device.get("role", "agent") != "presence":
+            return None
+        return {"credential": device.get("credential", "secret"), "public_key": deepcopy(device.get("public_key")),
+                "device": self._public_device(device, self.online_ttl)}
+
+    def touch(self, device_id: str) -> None:
+        with self._lock:
+            data = self._read()
+            device = next((item for item in data["devices"] if item.get("id") == device_id), None)
+            if device is not None:
+                device["last_seen"] = utc_text()
+                self._write(data)
+
+    def set_grants(self, device_id: str, grants: List[str]) -> Dict[str, Any]:
+        with self._lock:
+            data = self._read()
+            device = next((item for item in data["devices"] if item.get("id") == device_id), None)
+            if device is None or device.get("revoked"):
+                raise KeyError("Device was not found.")
+            if device.get("role", "agent") != "presence":
+                raise ValueError("Only remote presence devices hold grants.")
+            device["grants"] = sorted(set(grants))
+            device["grants_updated_at"] = utc_text()
+            self._write(data)
             return self._public_device(device, self.online_ttl)
 
     def list_devices(self) -> List[Dict[str, Any]]:
@@ -241,6 +321,8 @@ class DeviceStore:
             )
             if device is None:
                 raise KeyError("Device was not found.")
+            if device.get("role", "agent") != "agent":
+                raise ValueError("Remote presence devices cannot execute agent actions.")
             capabilities = set(device.get("capabilities", []))
             if action not in capabilities:
                 raise ValueError("The paired device did not advertise this capability.")

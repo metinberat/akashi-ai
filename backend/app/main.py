@@ -19,6 +19,8 @@ from app.api.files import router as file_router
 from app.api.memory import router as memory_router
 from app.api.phone import router as phone_router
 from app.api.phone import worker_router as phone_worker_router
+from app.api.remote import device_router as remote_device_router
+from app.api.remote import owner_router as remote_owner_router
 from app.api.research import router as research_router
 from app.api.system import router as system_router
 from app.api.live import router as live_router
@@ -43,12 +45,14 @@ settings = get_settings()
 async def lifespan(_app: FastAPI):
     core = get_core()
     owns_runtime_state = core.scheduler.start()
+    core.remote.start()
     if owns_runtime_state:
         await core.live.interactions.recover_after_restart()
         core.voice_sessions.recover_after_restart()
     try:
         yield
     finally:
+        await core.remote.stop()
         await core.production_host.shutdown()
         await core.expertise.training_host.shutdown()
         core.expertise.workshop.shutdown()
@@ -96,6 +100,8 @@ app.include_router(event_router)
 app.include_router(system_router)
 app.include_router(live_router)
 app.include_router(spatial_router)
+app.include_router(remote_owner_router)
+app.include_router(remote_device_router)
 app.include_router(intelligence_router)
 app.include_router(voice_router)
 app.include_router(phone_router)

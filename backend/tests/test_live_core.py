@@ -77,6 +77,7 @@ class LiveActionTests(unittest.IsolatedAsyncioTestCase):
                 "computer.goal",
                 "autonomy.goal",
                 "spatial.scene",
+                "remote.devices",
             },
         )
         for definition in definitions.values():
@@ -103,6 +104,17 @@ class LiveActionTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(self.registry.select("FastAPI dersini bana anlat."))
         self.assertIsNone(self.registry.select("How do I open VS Code?"))
         self.assertIsNone(self.registry.select("How to open the AKASHI project"))
+
+    def test_remote_device_utterances_cannot_reach_computer_actions(self) -> None:
+        from app.remote import context as remote_context
+        token = remote_context.enter({"scopes": frozenset({"voice.spatial", "assistant.chat"}), "provenance": None, "spatial": None})
+        try:
+            for message in ("VS Code'u aç.", "Look through the camera.", "Ekranıma bak ve ne gördüğünü söyle.",
+                            "Bilgisayarın durumunu söyle.", "Open Discord, find the project page, then return to VS Code."):
+                self.assertIsNone(self.registry.select(message), message)
+        finally:
+            remote_context.leave(token)
+        self.assertIsNotNone(self.registry.select("VS Code'u aç."))  # unchanged for the local owner
 
     async def test_system_status_response_uses_runtime_measurements(self) -> None:
         action, match = self.registry.select("Bilgisayarın durumu ne?")  # type: ignore[misc]

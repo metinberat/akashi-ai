@@ -8,7 +8,13 @@ Ephemeral (memory only, never replayed):
   it is held, other origins (voice, tools, UI) cannot change that object and
   undo/redo wait, so two input methods never fight over one object.
 * **Presence** — the latest hand anchors projected onto the interaction plane,
-  used to resolve "move it to my right hand". Stale anchors are ignored.
+  per source (the local client or a remote device session), used to resolve
+  "move it to my right hand". Stale anchors are ignored; a command prefers the
+  anchors of the device that issued it.
+
+A lease may be owned by a remote session: only that session can renew, commit
+or end it (the local owner keeps authority), and it is released the moment the
+session leaves.
 """
 
 from __future__ import annotations
@@ -39,10 +45,21 @@ class Lease:
     origin: str
     expires: float
     started: float
+    owner: Optional[str] = None
+    holder: Optional[Dict[str, Any]] = None
+    revision: int = 0
 
     def public(self, now: float) -> Dict[str, Any]:
-        return {"id": self.id, "object_id": self.object_id, "origin": self.origin,
-                "expires_in": round(max(0.0, self.expires - now), 3)}
+        value = {"id": self.id, "object_id": self.object_id, "origin": self.origin,
+                 "expires_in": round(max(0.0, self.expires - now), 3)}
+        if self.holder:
+            value["holder"] = dict(self.holder)
+        return value
+
+
+class LeaseNotYours(CommandRejected):
+    def __init__(self) -> None:
+        super().__init__("lease_not_yours", "That manipulation lease belongs to another device.")
 
 
 class SessionCorrupted(RuntimeError):
@@ -56,8 +73,8 @@ class SpatialSession:
         self.monotonic = monotonic
         self.lock = threading.RLock()
         self.leases: Dict[str, Lease] = {}
-        self.presence: Dict[str, Any] = {}
-        self.presence_at: Optional[float] = None
+        self.presence: Dict[str, Dict[str, Any]] = {}
+        self.presence_at: Dict[str, float] = {}
         self.last_client_seen: Optional[float] = None
         self.recovered_torn_tail = recovered_torn_tail
         self.pending_confirmations: Dict[str, Dict[str, Any]] = {}
@@ -71,60 +88,99 @@ class SpatialSession:
         return self.history.log.header.get("metadata", {}).get("label", "Spatial Lab")
 
     # Leases -----------------------------------------------------------------------
-    def _expire(self) -> None:
+    def _expire(self) -> List[Lease]:
         now = self.monotonic()
-        for key in [k for k, lease in self.leases.items() if lease.expires <= now]:
-            del self.leases[key]
+        expired = [lease for lease in self.leases.values() if lease.expires <= now]
+        for lease in expired:
+            del self.leases[lease.object_id]
+        return expired
+
+    def expire(self) -> List[Lease]:
+        return self._expire()
 
     def lease_for(self, object_id: str) -> Optional[Lease]:
         self._expire()
         return self.leases.get(object_id)
 
-    def begin_lease(self, object_id: str, origin: str) -> Lease:
+    def begin_lease(self, object_id: str, origin: str, owner: Optional[str] = None,
+                    holder: Optional[Dict[str, Any]] = None) -> Lease:
         self._expire()
         if object_id not in self.history.state["objects"]:
             raise CommandRejected("object_not_found", "The target object is not in this scene.")
         if object_id in self.leases:
-            raise CommandRejected("object_busy", "That object is already being manipulated.")
+            raise CommandRejected("object_busy", "That object is already being manipulated.",
+                                  {"holder": self.leases[object_id].holder})
         now = self.monotonic()
-        lease = Lease("lease-" + uuid.uuid4().hex[:16], object_id, origin, now + LEASE_TTL_SECONDS, now)
+        lease = Lease("lease-" + uuid.uuid4().hex[:16], object_id, origin, now + LEASE_TTL_SECONDS, now,
+                      owner, holder, self.history.revision)
         self.leases[object_id] = lease
         return lease
 
-    def find_lease(self, lease_id: str) -> Lease:
+    def find_lease(self, lease_id: str, owner: Optional[str] = None) -> Lease:
         self._expire()
         for lease in self.leases.values():
             if lease.id == lease_id:
+                # owner None = the local owner (API token), who keeps authority over every lease.
+                if owner is not None and lease.owner != owner:
+                    raise LeaseNotYours()
                 return lease
         raise CommandRejected("lease_expired", "The manipulation lease expired; the object was released.")
 
-    def renew_lease(self, lease_id: str) -> Lease:
-        lease = self.find_lease(lease_id)
+    def renew_lease(self, lease_id: str, owner: Optional[str] = None) -> Lease:
+        lease = self.find_lease(lease_id, owner)
         lease.expires = self.monotonic() + LEASE_TTL_SECONDS
         return lease
 
-    def end_lease(self, lease_id: str) -> bool:
+    def end_lease(self, lease_id: str, owner: Optional[str] = None) -> bool:
         self._expire()
         for key, lease in list(self.leases.items()):
             if lease.id == lease_id:
+                if owner is not None and lease.owner != owner:
+                    raise LeaseNotYours()
                 del self.leases[key]
                 return True
         return False
+
+    def release_owner(self, owner: str) -> List[Lease]:
+        self._expire()
+        released = [lease for lease in self.leases.values() if lease.owner == owner]
+        for lease in released:
+            del self.leases[lease.object_id]
+        return released
 
     def active_leases(self) -> List[Lease]:
         self._expire()
         return list(self.leases.values())
 
     # Presence ---------------------------------------------------------------------
-    def set_presence(self, anchors: Dict[str, Any]) -> None:
-        self.presence = {k: v for k, v in anchors.items() if k in ANCHORS}
-        self.presence_at = self.monotonic()
-        self.last_client_seen = self.presence_at
+    def set_presence(self, anchors: Dict[str, Any], source: str = "local") -> None:
+        now = self.monotonic()
+        self.presence[source] = {k: v for k, v in anchors.items() if k in ANCHORS}
+        self.presence_at[source] = now
+        if len(self.presence) > 16:
+            oldest = min(self.presence_at, key=self.presence_at.get)
+            self.presence.pop(oldest, None)
+            self.presence_at.pop(oldest, None)
+        self.last_client_seen = now
 
-    def fresh_anchors(self) -> Dict[str, Any]:
-        if self.presence_at is None or self.monotonic() - self.presence_at > PRESENCE_TTL_SECONDS:
+    def clear_presence(self, source: str) -> bool:
+        self.presence_at.pop(source, None)
+        return self.presence.pop(source, None) is not None
+
+    def fresh_sources(self) -> Dict[str, Dict[str, Any]]:
+        now = self.monotonic()
+        return {source: dict(anchors) for source, anchors in self.presence.items()
+                if now - self.presence_at.get(source, -1e9) <= PRESENCE_TTL_SECONDS and anchors}
+
+    def fresh_anchors(self, prefer: Optional[str] = None) -> Dict[str, Any]:
+        """Anchors of ``prefer`` when fresh, otherwise of the most recently updated fresh source."""
+        fresh = self.fresh_sources()
+        if prefer is not None and prefer in fresh:
+            return fresh[prefer]
+        if not fresh:
             return {}
-        return dict(self.presence)
+        newest = max(fresh, key=lambda source: self.presence_at[source])
+        return fresh[newest]
 
     def touch_client(self) -> None:
         self.last_client_seen = self.monotonic()

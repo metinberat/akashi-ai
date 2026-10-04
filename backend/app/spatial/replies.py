@@ -134,3 +134,64 @@ def failure_reply(code: str, language: str, detail: Optional[str] = None) -> str
         template = FAILURES[code][0 if tr else 1]
         return template.format(detail=detail or "")
     return detail or ("İstek uygulanamadı." if tr else "The request could not be applied.")
+
+
+MODALITY_WORDS = {
+    "gesture": ("el hareketi", "hand gesture"), "touch": ("dokunma", "touch"), "pointer": ("işaretçi", "pointer"),
+    "language": ("yazılı komut", "typed command"), "voice": ("sesli komut", "voice command"), "ui": ("arayüz", "UI control"),
+}
+KIND_WORDS = {
+    "gesture": ("Bu bilgisayardaki el hareketi", "Hand gesture on this computer"),
+    "language": ("Komut", "Instruction"), "ui": ("Arayüz", "UI control"), "tool": ("AKASHI aracı", "AKASHI tool"),
+    "replay": ("Tekrar oynatma", "Replay"), "system": ("Sistem", "System"),
+}
+
+
+def describe_origin(origin: Dict[str, Any]) -> Dict[str, Any]:
+    """Human provenance for an event origin, e.g. 'Remote touch from iPhone (session rs-…)'."""
+    kind = origin.get("kind", "unknown")
+    remote = origin.get("remote") if isinstance(origin.get("remote"), dict) else None
+    result: Dict[str, Any] = {"kind": kind, "provider": origin.get("provider")}
+    if remote:
+        tr_mod, en_mod = MODALITY_WORDS.get(remote.get("modality", ""), ("giriş", "input"))
+        name = remote.get("device_name", "remote device")
+        result.update(
+            device={"id": remote.get("device_id"), "name": name, "type": remote.get("device_type")},
+            session=remote.get("session"), modality=remote.get("modality"), at=remote.get("received_at"),
+            message_id=remote.get("message_id"),
+            en=f"Remote {en_mod} from {name} (session {remote.get('session')})",
+            tr=f"{name} cihazından uzaktan {tr_mod} (oturum {remote.get('session')})")
+    else:
+        tr_word, en_word = KIND_WORDS.get(kind, ("Bilinmeyen kaynak", "Unknown source"))
+        voice = bool((origin.get("input") or {}).get("voice"))
+        if kind == "language":
+            tr_word, en_word = ("Sesli komut", "Voice instruction") if voice else ("Yazılı komut", "Typed instruction")
+        result.update(en=f"{en_word} ({origin.get('provider')})", tr=f"{tr_word} ({origin.get('provider')})")
+    approval = origin.get("approval")
+    if isinstance(approval, dict):
+        who = approval.get("device_name") or ("sahip" if approval.get("by") == "owner" else "cihaz")
+        who_en = approval.get("device_name") or ("the owner" if approval.get("by") == "owner" else "a device")
+        result["approval"] = dict(approval)
+        result["en"] += f", approved by {who_en}"
+        result["tr"] += f", {who} tarafından onaylandı"
+    return result
+
+
+def explain_provenance(record: Dict[str, Any], language: str) -> str:
+    tr = language == "tr"
+    label = record.get("label") or record["object_id"]
+    changes = record.get("changes", [])
+    if not changes:
+        return f"{label} eklendiğinden beri değişmedi." if tr else f"{label} has not changed since it was added."
+    last = changes[0]
+    origin = last["origin"]["tr" if tr else "en"]
+    when = (last.get("at") or "")[11:19]
+    if last["kind"] == "undo":
+        what = "geri alma" if tr else "an undo"
+    elif last["kind"] == "redo":
+        what = "yineleme" if tr else "a redo"
+    else:
+        what = last.get("summary") or last.get("command")
+    if tr:
+        return f"{label} için son değişiklik #{last['seq']} ({what}) {when}: {origin}."
+    return f"Last change to {label} was #{last['seq']} ({what}) at {when}: {origin}."

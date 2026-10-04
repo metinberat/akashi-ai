@@ -13,6 +13,7 @@ from app.live.models import ActionMatch, LiveActionDefinition
 if TYPE_CHECKING:
     from app.autonomy.engine import LongHorizonTaskEngine
     from app.computer.service import ComputerAgentService
+    from app.remote.runtime import RemoteRuntime
     from app.spatial.service import SpatialLabService
 
 
@@ -45,6 +46,7 @@ class LiveActionRuntime:
     computer: Optional["ComputerAgentService"] = None
     autonomy: Optional["LongHorizonTaskEngine"] = None
     spatial: Optional["SpatialLabService"] = None
+    remote: Optional["RemoteRuntime"] = None
 
 
 class LiveAction(ABC):

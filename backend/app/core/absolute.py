@@ -41,6 +41,8 @@ from app.live.store import JSONInteractionStore
 from app.research.providers import SearxNGResearchProvider, WikipediaResearchProvider, DuckDuckGoResearchProvider
 from app.research.base import ResearchSource
 from app.research.service import ResearchService
+from app.remote.runtime import RemoteRuntime
+from app.remote.tools import remote_tools
 from app.spatial.service import SpatialLabService
 from app.spatial.tools import spatial_tools
 from app.tasks.engine import TaskEngine
@@ -183,6 +185,19 @@ class AkashiCore:
             browser=SemanticBrowserAgent(self.desktop, self.model_router),
             experience_sink=self.expertise.record_experience,
         )
+        self.remote = RemoteRuntime(
+            self.devices,
+            directory=settings.remote_dir or settings.spatial_dir.parent / "remote",
+            spatial=self.spatial,
+            tasks=self.tasks,
+            autonomy=self.autonomy,
+            voice_sessions=self.voice_sessions,
+            chat=self.chat,
+            events=event_hub,
+            endpoints=settings.remote_endpoints,
+        )
+        for tool in remote_tools(self.remote):
+            self.tools.register(tool)
         self.live = AkashiLiveCore(
             LiveActionRuntime(
                 settings=settings,
@@ -192,6 +207,7 @@ class AkashiCore:
                 computer=self.computer,
                 autonomy=self.autonomy,
                 spatial=self.spatial,
+                remote=self.remote,
             ),
             event_hub,
             JSONInteractionStore(settings.live_state_file),

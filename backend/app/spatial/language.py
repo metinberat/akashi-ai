@@ -81,8 +81,28 @@ HIDE = r"\b(hide|hidden|turn off|disable|off|remove the|gizle|kapat|sakla|kaldir
 SHOW = r"\b(show|display|reveal|turn on|enable|on|unhide|goster|ac|gorunur)\b"
 
 
+PROVENANCE = re.compile(
+    r"\b(why did|why has|why is|who moved|who changed|who rotated|who scaled|what moved|what changed|what happened to|"
+    r"neden (?:hareket etti|tasindi|yer degistirdi|degisti|dondu)|kim (?:tasidi|degistirdi|dondurdu|oynatti)|ne oldu)\b")
+
+
 class RuleInterpreter:
     source = "rules"
+
+    def provenance_query(self, text: str, summary: Optional[Dict[str, Any]] = None) -> Optional[Tuple[Dict[str, Any], str]]:
+        """'Why did this move?' / 'Bunu kim taşıdı?' → (object reference, language); read-only."""
+        if not isinstance(text, str) or not text.strip() or len(text) > 500:
+            return None
+        t = _clean(text)
+        match = PROVENANCE.search(t)
+        if match is None:
+            return None
+        if match.group(1).startswith(("why is", "what changed")) and not re.search(r"\b(move|moved|here|there|change|changed|rotat|scale|bigger|smaller)", t):
+            return None
+        language = "tr" if is_turkish(text) or TURKISH_HINTS.search(t) or match.group(1).startswith(("neden", "kim", "ne oldu")) else "en"
+        rest = t[: match.start()] + " " + t[match.end():]
+        ref, _ = self._reference(rest, summary)
+        return ref, language
 
     def interpret(self, text: str, summary: Optional[Dict[str, Any]] = None) -> Optional[Interpretation]:
         if not isinstance(text, str) or not text.strip() or len(text) > 500:

@@ -73,6 +73,7 @@ class CommandInput(BaseModel):
     request: Dict[str, Any]
     origin: Dict[str, Any] = Field(default_factory=lambda: {"kind": "ui", "provider": "ui"})
     confirmed: bool = False
+    base_revision: Optional[int] = Field(default=None, ge=0)
 
 
 class ConfirmInput(BaseModel):
@@ -90,7 +91,7 @@ class InterpretInput(BaseModel):
 class LeaseInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     object_id: str = Field(max_length=32)
-    origin: Literal["gesture", "ui", "remote"] = "gesture"
+    origin: Literal["gesture", "ui"] = "gesture"
 
 
 class AnchorInput(BaseModel):
@@ -141,8 +142,12 @@ async def get_session(session_id: str, since: Optional[int] = Query(default=None
 
 @router.post("/sessions/{session_id}/commands")
 async def submit(session_id: str, value: CommandInput, spatial: SpatialLabService = Depends(service)):
+    if value.origin.get("kind") == "remote" or "remote" in value.origin or "approval" in value.origin:
+        # Remote and approval provenance are attached by Core (app.remote), never claimed by a caller.
+        return error(422, "origin_reserved", "Remote and approval provenance cannot be supplied by the caller.", kind="rejected")
     async def run():
-        result = await spatial.submit(session_id, value.request, value.origin, confirmed=value.confirmed)
+        result = await spatial.submit(session_id, value.request, value.origin, confirmed=value.confirmed,
+                                      base_revision=value.base_revision)
         return _response(result, spatial, session_id)
     return await guarded(run)
 
@@ -206,6 +211,14 @@ async def events(session_id: str, after: int = Query(default=0, ge=0), limit: in
 async def verify(session_id: str, spatial: SpatialLabService = Depends(service)):
     async def run():
         return spatial.verify_replay(session_id)
+    return await guarded(run)
+
+
+@router.get("/sessions/{session_id}/objects/{object_id}/provenance")
+async def object_provenance(session_id: str, object_id: str, spatial: SpatialLabService = Depends(service)):
+    """Why does this object look like this? Every recorded change with its origin (device, session, modality)."""
+    async def run():
+        return spatial.provenance(session_id, object_id)
     return await guarded(run)
 
 

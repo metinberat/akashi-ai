@@ -47,7 +47,9 @@ async def require_device(
             headers={"WWW-Authenticate": "Bearer"},
         )
     device = core.devices.authenticate(device_id, token)
-    if device is None:
+    if device is None or device.get("role", "agent") != "agent":
+        # Remote presence devices authenticate through /remote; they can never
+        # poll or complete Windows Agent actions.
         raise HTTPException(
             status_code=401,
             detail="Invalid or revoked device credentials.",
@@ -91,6 +93,8 @@ async def revoke_device(
 ) -> Dict[str, str]:
     if not core.devices.revoke(device_id):
         raise HTTPException(status_code=404, detail="Device was not found.")
+    # A remote presence device loses its live sessions immediately, not at the next sweep.
+    await core.remote.hub.revoke_device(device_id)
     await event_hub.publish("device.revoked", {"device_id": device_id})
     return {"status": "revoked"}
 

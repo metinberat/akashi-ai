@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from app.live import actions as actions_package
 from app.live.actions.base import LiveAction, LiveActionRuntime
+from app.remote import context as remote_context
 from app.live.models import ActionMatch
 
 
@@ -60,6 +61,8 @@ class LiveActionRegistry:
     def select(self, message: str) -> Optional[Tuple[LiveAction, ActionMatch]]:
         matches: List[Tuple[int, str, LiveAction, ActionMatch]] = []
         for name, action in self._actions.items():
+            if not remote_context.live_action_allowed(name):
+                continue  # a remote device's utterance may only reach remote-safe actions
             match = action.match(message)
             if match is not None:
                 matches.append((match.score, name, action, match))

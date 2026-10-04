@@ -32,12 +32,15 @@ from app.spatial.glb import MAX_GLB_BYTES
 from app.spatial.language import ModelInterpreter, RuleInterpreter
 from app.spatial.model import LIMITS, SCENE_SCHEMA, summarize
 from app.spatial.references import Clarification
-from app.spatial.replies import describe, failure_reply
+from app.spatial.replies import describe, describe_origin, explain_provenance, failure_reply
 from app.spatial.session import PRESENCE_TTL_SECONDS, SessionCorrupted, SessionStore, SpatialSession
 
 CONFIRMATION_TTL = 60.0
 ACTIVE_CLIENT_SECONDS = 45.0
 MAX_ORIGIN_INPUT = 4096
+# Event categories that do not change an object (selection/inspector focus, view
+# options); a newer one of these never makes a request against that object stale.
+NON_OBJECT_CATEGORIES = {"selection", "view"}
 
 
 class RequestInvalid(ValueError):
@@ -87,6 +90,19 @@ class SpatialLabService:
         self.active_session_id: Optional[str] = None
         self.latencies: Deque[float] = deque(maxlen=500)
         self.counters: Dict[str, int] = {}
+        # Synchronous observers of committed changes and lease changes, e.g. the
+        # remote presence bridge. Called after the change, never inside the lock.
+        self.observers: List[Callable[[str, Dict[str, Any]], None]] = []
+
+    def observe(self, callback: Callable[[str, Dict[str, Any]], None]) -> None:
+        self.observers.append(callback)
+
+    def _notify(self, session_id: str, change: Dict[str, Any]) -> None:
+        for callback in list(self.observers):
+            try:
+                callback(session_id, change)
+            except Exception:  # an observer must never break the command path
+                self._count("observer_error")
 
     # Capabilities -----------------------------------------------------------------
     def capabilities(self) -> Dict[str, Any]:
@@ -169,16 +185,54 @@ class SpatialLabService:
         except ValidationError as exc:
             raise RequestInvalid(_validation_message(exc)) from exc
 
-    def _prepare(self, session: SpatialSession, request_model: Any) -> Prepared:
+    @staticmethod
+    def presence_source(origin: Optional[Dict[str, Any]]) -> str:
+        remote = (origin or {}).get("remote")
+        return remote["session"] if isinstance(remote, dict) and remote.get("session") else "local"
+
+    def _prepare(self, session: SpatialSession, request_model: Any, origin: Optional[Dict[str, Any]] = None) -> Prepared:
         context = CompileContext(state=session.history.state, events=session.history.events,
-                                 assets=self.assets, anchors=session.fresh_anchors())
+                                 assets=self.assets, anchors=session.fresh_anchors(self.presence_source(origin)))
         return compile_request(request_model, context)
 
-    def _check_leases(self, session: SpatialSession, prepared: Prepared, origin: Dict[str, Any]) -> None:
+    @staticmethod
+    def check_fresh(session: SpatialSession, targets: List[str], base_revision: Optional[int],
+                    history_request: bool = False) -> None:
+        """Refuse a request built on an outdated view of its targets.
+
+        A client sends the revision it was looking at. If any target object was
+        changed after that revision (by anyone), applying the request could move
+        the scene backward, so it is rejected and the client re-reads state.
+        Undo/redo must be based on the current revision exactly.
+        """
+        if base_revision is None:
+            return
+        current = session.history.revision
+        if base_revision > current:
+            raise CommandRejected("revision_ahead", "The device's view is ahead of Core (Core restarted or the session was replaced). Re-sync.",
+                                  {"current_revision": current})
+        if history_request:
+            if base_revision != current:
+                raise CommandRejected("stale_state", "The scene changed since you looked; review it before undo or redo.",
+                                      {"current_revision": current})
+            return
+        wanted = set(targets)
+        for event in reversed(session.history.events):
+            if event["seq"] <= base_revision:
+                break
+            if event.get("category") in NON_OBJECT_CATEGORIES:
+                continue
+            if wanted & set(event.get("targets", [])):
+                raise CommandRejected("stale_state", "That object changed since your view; nothing was applied.",
+                                      {"current_revision": current, "changed_at": event["seq"],
+                                       "changed_by": describe_origin(event.get("origin", {}))})
+
+    def _check_leases(self, session: SpatialSession, prepared: Prepared, origin: Dict[str, Any],
+                      owner: Optional[str] = None) -> None:
         if prepared.history and session.active_leases():
             raise CommandRejected("object_busy", "Release the object in your hand before undo or redo.")
         if prepared.lease_id:
-            lease = session.find_lease(prepared.lease_id)
+            lease = session.find_lease(prepared.lease_id, owner)
             if lease.object_id not in prepared.targets:
                 raise CommandRejected("lease_mismatch", "The manipulation lease belongs to another object.")
         for target in prepared.targets:
@@ -192,7 +246,8 @@ class SpatialLabService:
         for command in commands:
             state = session.history.domain.apply(state, copy.deepcopy(command)).state
 
-    def _apply(self, session: SpatialSession, prepared: Prepared, origin: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _apply(self, session: SpatialSession, prepared: Prepared, origin: Dict[str, Any],
+               owner: Optional[str] = None) -> List[Dict[str, Any]]:
         history = session.history
         request = prepared.request
         if prepared.history == "undo":
@@ -206,57 +261,108 @@ class SpatialLabService:
             if event is not None:
                 produced.append(event)
         if prepared.lease_id:
-            session.end_lease(prepared.lease_id)
+            session.end_lease(prepared.lease_id, owner)
         return produced
 
-    def submit_sync(self, session_id: str, request: Any, origin: Dict[str, Any], confirmed: bool = False) -> Dict[str, Any]:
+    def submit_sync(self, session_id: str, request: Any, origin: Dict[str, Any], confirmed: bool = False,
+                    base_revision: Optional[int] = None, lease_owner: Optional[str] = None) -> Dict[str, Any]:
         started = time.perf_counter()
         origin = sanitize_origin(origin)
         model = self._parse(request)
         session = self.sessions.get(session_id)
         with session.lock:
-            prepared = self._prepare(session, model)
-            self._check_leases(session, prepared, origin)
+            prepared = self._prepare(session, model, origin)
+            self.check_fresh(session, prepared.targets, base_revision, bool(prepared.history))
+            self._check_leases(session, prepared, origin, lease_owner)
             if prepared.risk == "confirm" and not confirmed:
                 token = secrets.token_urlsafe(16)
                 question = describe(model, prepared, session.history.state, "en", pending=True)
                 session.pending_confirmations[token] = {
                     "prepared": prepared, "origin": origin, "revision": session.history.revision,
                     "expires": self.monotonic() + CONFIRMATION_TTL, "question": question, "request": model,
+                    "created": self.monotonic(), "requester": self.presence_source(origin),
                 }
                 self._count("confirmation_required")
-                return {"status": "confirmation_required", "token": token, "question": question,
-                        "targets": prepared.targets, "revision": session.history.revision}
-            produced = self._apply(session, prepared, origin)
+                result = {"status": "confirmation_required", "token": token, "question": question,
+                          "targets": prepared.targets, "revision": session.history.revision}
+                pending_change = True
+            else:
+                produced = self._apply(session, prepared, origin, lease_owner)
+                pending_change = False
+        if pending_change:
+            self._notify(session_id, {"type": "confirmations"})
+            return result
         self.latencies.append((time.perf_counter() - started) * 1000)
         self._count("applied" if produced else "noop")
         return {"status": "applied" if produced else "noop", "events": produced, "notes": prepared.notes,
-                "targets": prepared.targets, "revision": session.history.revision, "request": model}
+                "targets": prepared.targets, "revision": session.history.revision, "request": model,
+                "lease_released": bool(prepared.lease_id)}
 
-    async def submit(self, session_id: str, request: Any, origin: Dict[str, Any], confirmed: bool = False) -> Dict[str, Any]:
-        result = await asyncio.to_thread(self.submit_sync, session_id, request, origin, confirmed)
+    async def submit(self, session_id: str, request: Any, origin: Dict[str, Any], confirmed: bool = False,
+                     base_revision: Optional[int] = None, lease_owner: Optional[str] = None) -> Dict[str, Any]:
+        result = await asyncio.to_thread(self.submit_sync, session_id, request, origin, confirmed, base_revision, lease_owner)
         await self._publish(session_id, result, origin)
         return result
 
-    async def confirm(self, session_id: str, token: str, accept: bool = True) -> Dict[str, Any]:
+    def pending_confirmation(self, session_id: str, token: str) -> Optional[Dict[str, Any]]:
+        session = self.sessions.get(session_id)
+        with session.lock:
+            pending = session.pending_confirmations.get(token)
+            if pending is None or pending["expires"] < self.monotonic():
+                return None
+            return {"requester": pending.get("requester"), "question": pending["question"], "targets": list(pending["prepared"].targets)}
+
+    def pending_confirmations(self) -> List[Dict[str, Any]]:
+        """Every live confirmation across loaded sessions (for the approvals center)."""
+        now = self.monotonic()
+        items = []
+        with self.sessions._lock:
+            loaded = list(self.sessions._sessions.values())
+        for session in loaded:
+            with session.lock:
+                for token, pending in session.pending_confirmations.items():
+                    if pending["expires"] <= now:
+                        continue
+                    items.append({"session_id": session.id, "session_label": session.label, "token": token,
+                                  "question": pending["question"], "request": pending["request"].model_dump(exclude_none=True),
+                                  "targets": list(pending["prepared"].targets), "requested_by": describe_origin(pending["origin"]),
+                                  "requester": pending.get("requester"), "expires_in": round(pending["expires"] - now, 1),
+                                  "age_seconds": round(now - pending.get("created", now), 1)})
+        return items
+
+    async def confirm(self, session_id: str, token: str, accept: bool = True,
+                      decided_by: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         session = self.sessions.get(session_id)
         with session.lock:
             pending = session.pending_confirmations.pop(token, None)
             if pending is None or pending["expires"] < self.monotonic():
                 raise CommandRejected("confirmation_expired", "That confirmation expired. Ask again.")
             if not accept:
-                return {"status": "declined", "events": [], "notes": [], "targets": pending["prepared"].targets,
-                        "revision": session.history.revision}
-            if pending["revision"] != session.history.revision:
-                raise CommandRejected("scene_changed", "The scene changed since the request; ask again so I can re-check the target.")
-            self._check_leases(session, pending["prepared"], pending["origin"])
-            produced = self._apply(session, pending["prepared"], pending["origin"])
+                declined = {"status": "declined", "events": [], "notes": [], "targets": pending["prepared"].targets,
+                            "revision": session.history.revision}
+            else:
+                declined = None
+                if pending["revision"] != session.history.revision:
+                    raise CommandRejected("scene_changed", "The scene changed since the request; ask again so I can re-check the target.")
+                origin = dict(pending["origin"])
+                if decided_by is not None:
+                    origin["approval"] = rq.ApprovalProvenance.model_validate({"decision": "approved", **decided_by}).model_dump(exclude_none=True)
+                self._check_leases(session, pending["prepared"], origin)
+                produced = self._apply(session, pending["prepared"], origin)
+        self._notify(session_id, {"type": "confirmations"})
+        if declined is not None:
+            return declined
         result = {"status": "applied" if produced else "noop", "events": produced, "notes": pending["prepared"].notes,
                   "targets": pending["prepared"].targets, "revision": session.history.revision, "request": pending["request"]}
-        await self._publish(session_id, result, pending["origin"])
+        await self._publish(session_id, result, origin)
         return result
 
     async def _publish(self, session_id: str, result: Dict[str, Any], origin: Dict[str, Any]) -> None:
+        if result.get("events"):
+            self._notify(session_id, {"type": "events", "events": result["events"], "revision": result.get("revision")})
+        if result.get("lease_released"):
+            # After the committed event, so viewers never snap back to the pre-commit transform.
+            self._notify(session_id, {"type": "leases"})
         if self.events is None:
             return
         for event in result.get("events", []):
@@ -266,33 +372,115 @@ class SpatialLabService:
             })
 
     # Interactions -----------------------------------------------------------------
-    def begin_lease(self, session_id: str, object_id: str, origin: str) -> Dict[str, Any]:
+    def begin_lease(self, session_id: str, object_id: str, origin: str, *, owner: Optional[str] = None,
+                    holder: Optional[Dict[str, Any]] = None, base_revision: Optional[int] = None) -> Dict[str, Any]:
         session = self.sessions.get(session_id)
         with session.lock:
-            lease = session.begin_lease(object_id, origin)
-            return lease.public(self.monotonic())
+            self.check_fresh(session, [object_id], base_revision)
+            lease = session.begin_lease(object_id, origin, owner, holder)
+            public = lease.public(self.monotonic())
+            public["revision"] = session.history.revision
+        self._notify(session_id, {"type": "leases"})
+        return public
 
-    def renew_lease(self, session_id: str, lease_id: str) -> Dict[str, Any]:
+    def renew_lease(self, session_id: str, lease_id: str, owner: Optional[str] = None) -> Dict[str, Any]:
         session = self.sessions.get(session_id)
         with session.lock:
-            return session.renew_lease(lease_id).public(self.monotonic())
+            return session.renew_lease(lease_id, owner).public(self.monotonic())
 
-    def end_lease(self, session_id: str, lease_id: str) -> bool:
+    def end_lease(self, session_id: str, lease_id: str, owner: Optional[str] = None) -> bool:
         session = self.sessions.get(session_id)
         with session.lock:
-            return session.end_lease(lease_id)
+            ended = session.end_lease(lease_id, owner)
+        if ended:
+            self._notify(session_id, {"type": "leases"})
+        return ended
 
-    def presence(self, session_id: str, anchors: Dict[str, Any]) -> None:
+    def leases(self, session_id: str) -> List[Dict[str, Any]]:
+        session = self.sessions.get(session_id)
+        now = self.monotonic()
+        with session.lock:
+            return [lease.public(now) for lease in session.active_leases()]
+
+    def release_owner(self, owner: str) -> List[str]:
+        """Release every lease and presence entry of a departing remote session."""
+        touched = []
+        with self.sessions._lock:
+            loaded = list(self.sessions._sessions.values())
+        for session in loaded:
+            with session.lock:
+                released = session.release_owner(owner)
+                cleared = session.clear_presence(owner)
+            if released or cleared:
+                touched.append(session.id)
+                self._notify(session.id, {"type": "leases"})
+        return touched
+
+    def sweep_leases(self) -> List[str]:
+        """Expire leases eagerly so every viewer drops a dead hand's preview promptly."""
+        changed = []
+        with self.sessions._lock:
+            loaded = list(self.sessions._sessions.values())
+        for session in loaded:
+            with session.lock:
+                expired = session.expire()
+            if expired:
+                changed.append(session.id)
+                self._notify(session.id, {"type": "leases", "expired": [lease.id for lease in expired]})
+        return changed
+
+    def presence(self, session_id: str, anchors: Dict[str, Any], source: str = "local") -> None:
         session = self.sessions.get(session_id)
         with session.lock:
-            session.set_presence(anchors)
-        self.active_session_id = session.id
+            session.set_presence(anchors, source)
+        if source == "local":
+            self.active_session_id = session.id
+
+    def _answer_provenance(self, session: SpatialSession, ref: Dict[str, Any], language: str,
+                           remote: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        from app.spatial.references import resolve
+        try:
+            with session.lock:
+                anchors = session.fresh_anchors(remote["session"] if remote else "local")
+                object_id = resolve(rq.ObjectRef.model_validate(ref), session.history.state, session.history.events, anchors)
+        except Clarification as exc:
+            return {"understood": True, "query": "provenance", "clarification": {"code": exc.code, "question": exc.question,
+                    "candidates": exc.candidates}, "results": [], "reply": failure_reply(exc.code, language, exc.question)}
+        record = self.provenance(session.id, object_id)
+        self._count("provenance_query")
+        return {"understood": True, "query": "provenance", "provenance": record, "results": [],
+                "reply": explain_provenance(record, language)}
+
+    # Provenance -------------------------------------------------------------------
+    def provenance(self, session_id: str, object_id: str, limit: int = 20) -> Dict[str, Any]:
+        """Why does this object look the way it does? Every recorded change to it, newest first."""
+        session = self.sessions.get(session_id)
+        with session.lock:
+            state = session.history.state
+            label = state["objects"].get(object_id, {}).get("label")
+            changes = []
+            for event in reversed(session.history.events):
+                if object_id not in event.get("targets", []) or event.get("category") in NON_OBJECT_CATEGORIES:
+                    continue
+                changes.append({"seq": event["seq"], "at": event["at"], "kind": event["kind"], "category": event.get("category"),
+                                "command": event["command"].get("type"), "summary": event.get("summary"),
+                                "origin": describe_origin(event.get("origin", {})), "digest_after": event["digest_after"],
+                                "undoes": event.get("undoes"), "redoes": event.get("redoes")})
+                if len(changes) >= limit:
+                    break
+        if label is None and not changes:
+            raise CommandRejected("object_not_found", "That object has no recorded history in this scene.")
+        return {"session_id": session_id, "object_id": object_id, "label": label, "changes": changes}
 
     # Language ---------------------------------------------------------------------
     async def interpret(self, session_id: str, text: str, *, provider: str = "ui:command-bar",
-                        execute: bool = True, voice: bool = False) -> Dict[str, Any]:
+                        execute: bool = True, voice: bool = False,
+                        remote: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         session = self.sessions.get(session_id)
         summary = summarize(session.history.state)
+        question = self.rules.provenance_query(text, summary)
+        if question is not None:
+            return self._answer_provenance(session, question[0], question[1], remote)
         interpretation = self.rules.interpret(text, summary)
         if interpretation is None and self.model is not None:
             interpretation = await self.model.interpret(text, summary)
@@ -300,8 +488,10 @@ class SpatialLabService:
         if interpretation is None:
             self._count("not_understood")
             return {"understood": False, "reply": failure_reply("not_understood", language), "results": []}
-        origin = {"kind": "language", "provider": f"{provider}+{interpretation.source}",
-                  "input": {"text": text[:500], "rule": interpretation.rule, "voice": voice}}
+        origin: Dict[str, Any] = {"kind": "language", "provider": f"{provider}+{interpretation.source}",
+                                  "input": {"text": text[:500], "rule": interpretation.rule, "voice": voice}}
+        if remote is not None:
+            origin.update(kind="remote", remote=remote)
         outcome: Dict[str, Any] = {"understood": True, "interpretation": {
             "source": interpretation.source, "rule": interpretation.rule, "language": language,
             "requests": interpretation.requests}, "results": []}
