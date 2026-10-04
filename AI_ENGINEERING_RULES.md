@@ -97,6 +97,11 @@ Use these words exactly:
   - `backend/app/live/` — natural-language action registry for `/chat`.
   - `backend/app/events/hub.py` — redacted, process-local event fan-out.
   - `frontend/src/lib/spatial/gesture/` — renderer-independent hand-gesture engine.
+  - `backend/app/remote/` — device identity (keys, challenge handshake), scopes,
+    capability registry, short-lived sessions, ordered/idempotent message hub,
+    WebSocket + HTTP transports, hash-chained audit. `frontend/src/lib/remote/`
+    is its client (resilient session, transports, device identity).
+  - `backend/app/approvals/` — one view over pending approvals from their owners.
 - Duplicated logic across the Python/TypeScript boundary needs a contract test
   (see `shared/contracts/`).
 

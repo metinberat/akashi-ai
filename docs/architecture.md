@@ -20,6 +20,7 @@ FastAPI AKASHI Core
 ├─ Validated uploaded files
 ├─ Device pairing/action relay
 ├─ Spatial Lab scene service (one command path, action history, FORM read-only)
+├─ Remote presence hub (paired devices, scoped sessions, approvals center)
 └─ Authenticated SSE event stream
         │
         ├─ Ollama / Gemini
@@ -106,3 +107,15 @@ plus transient previews for objects held by a hand. FORM data is read through a
 read-only adapter (`form-library-read-1`) and is never written. Hand tracking
 (MediaPipe, local WASM and model) runs in the client; only commands and
 ephemeral hand anchors reach Core. Details: [spatial-lab.md](spatial-lab.md).
+
+## Remote presence
+
+`app/remote` turns other devices into scoped, authenticated parts of AKASHI:
+device keys and single-use challenge handshakes on top of the existing device
+registry, short-lived sessions, an ordered/idempotent message hub over WebSocket
+or HTTP long-poll, a live capability registry and a hash-chained audit trail.
+Spatial Lab is the first consumer (remote touch/gesture/voice/UI as ordinary
+requests with device provenance, live previews, presence per device); the
+approvals center (`app/approvals`) lets an authorized device decide pending
+approvals. Core stays authoritative; devices never send state and keep camera
+and microphone processing local. Details: [remote-presence.md](remote-presence.md).

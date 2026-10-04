@@ -252,7 +252,7 @@ def get_settings() -> Settings:
         spatial_form_data_dir=(Path(os.environ["AKASHI_FORM_DATA_DIR"].strip()).expanduser().resolve()
                                if (os.getenv("AKASHI_FORM_DATA_DIR") or "").strip() else None),
         spatial_interpreter="rules" if os.getenv("AKASHI_SPATIAL_INTERPRETER", "auto").strip().lower() == "rules" else "auto",
-        remote_dir=Path(os.environ["REMOTE_DIR"]).expanduser().resolve() if os.getenv("REMOTE_DIR", "").strip() else None,
+        remote_dir=data_path("REMOTE_DIR", "private/remote") if os.getenv("REMOTE_DIR", "").strip() else None,
         remote_endpoints=tuple(
             item.strip().rstrip("/") for item in os.getenv("AKASHI_REMOTE_ENDPOINTS", "").split(",")
             if item.strip().startswith(("https://", "http://"))

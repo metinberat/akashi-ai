@@ -157,6 +157,31 @@ untrusted data and cannot authorize tools or maintenance actions.
 - Spatial Lab: follow [the local acceptance contract](acceptance/spatial-lab-v1.md)
   (camera, gestures, FORM, replay); record results in its §6.
 
+## Remote presence (iPhone, Mac, another laptop)
+
+Devices reach Core over HTTPS; choose any reverse proxy, VPN or tunnel (none is
+built in or required). For a LAN setup, run Core on a LAN-reachable address
+behind a TLS reverse proxy whose certificate the devices trust, then:
+
+```powershell
+$env:AKASHI_REMOTE_ENDPOINTS="https://akashi.lan:8443"        # advertised to paired devices
+$env:AKASHI_CORS_ORIGINS="...,https://<origin serving the UI>"  # when using the browser client
+```
+
+The packaged desktop starts Core on `127.0.0.1` with CORS limited to
+`akashi://app`. Put a TLS reverse proxy on the same PC in front of it and allow
+the remote client's origin explicitly (validated; never `*`):
+
+```powershell
+$env:AKASHI_REMOTE_ORIGINS="capacitor://localhost,https://<origin serving /remote>"
+```
+
+In Spatial Lab open **Devices → Create pairing code**. On the device open the
+remote client (`/remote` in the browser, or the AKASHI app → More → Remote
+presence), enter the Core address and the code. Follow
+[the acceptance contract](acceptance/remote-spatial-presence-v1-5.md) for
+physical checks.
+
 ## Spatial Lab assets
 
 Hand tracking runs fully offline from files the frontend serves itself:
@@ -177,6 +202,7 @@ Optional settings in `backend/.env`: `SPATIAL_DIR`, `AKASHI_FORM_DATA_DIR`
 cd backend
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 .\.venv\Scripts\python.exe -m app.spatial.contract   # exit 1 if shared/contracts/spatial is stale
+.\.venv\Scripts\python.exe -m app.remote.contract    # exit 1 if shared/contracts/remote is stale
 
 cd ..\frontend
 npx tsc --noEmit

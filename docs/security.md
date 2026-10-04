@@ -88,6 +88,41 @@ local credential.
   truncated logs fail closed (`423 session_corrupted`) instead of being repaired.
   Credential-like text in language commands is redacted before it is recorded.
 
+## Remote presence (paired devices)
+
+- **No API token on devices.** A phone or laptop pairs with a one-time code that
+  the owner creates with explicit scopes. It receives no AKASHI API token.
+- **Device keys.** The device generates a P-256 key with WebCrypto
+  (`extractable: false`, stored as a `CryptoKey` in IndexedDB); Core stores only
+  the public key. Each session needs a fresh single-use nonce signed together with
+  the requested scopes (replay-proof, scope-bound). Insecure browser contexts can
+  only pair with a weaker bearer secret (PBKDF2-hashed, labelled in the UI).
+- **Short-lived sessions.** Session credentials are random, stored as SHA-256,
+  sent in the first WebSocket frame or an `Authorization` header (never URLs),
+  and expire after 90 s idle / 12 h. Core restarts invalidate all sessions.
+- **Scopes, not trust.** Every message is checked against the session's current
+  scopes. There is no scope for computer control; Agent actions can never target
+  a presence device, and remote chat can only reach `REMOTE_LIVE_ACTIONS`.
+  General approvals need the separate `approvals.general` grant.
+- **Immediate revocation.** Revoking a device or removing a scope closes or
+  demotes its live sessions before the owner's request returns and releases
+  anything it held.
+- **Integrity.** Envelopes are size- and rate-limited, de-duplicated by id,
+  ordered by seq; stale realtime input is dropped using a clock-offset estimate
+  (device clocks are never trusted). Remote and approval provenance is attached
+  by Core and rejected when a caller supplies it.
+- **Sensors stay on the device.** No raw camera or microphone channel exists;
+  the E2E suite inspects the phone's uplink while hand tracking runs.
+- **Audit.** Pairings, sessions, refusals, grant changes, revocations and
+  approval decisions are written to a hash-chained log
+  (`data/private/remote/audit`); a tampered log fails closed.
+- **Transport.** Use HTTPS (any reverse proxy, VPN or tunnel; none is required
+  by the design). WebSocket connections from origins outside
+  `AKASHI_CORS_ORIGINS` are refused. The packaged desktop keeps Core on
+  loopback with CORS `akashi://app`; extra remote-client origins are an explicit
+  opt-in (`AKASHI_REMOTE_ORIGINS`, validated: no wildcards, paths or credentials;
+  plain HTTP only for loopback).
+
 ## Known boundaries
 
 The JSON stores are appropriate for one personal Core process, not a horizontally

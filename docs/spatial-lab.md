@@ -292,13 +292,24 @@ npm run test:spatial                                # real Core + real MediaPipe
 Settings: `SPATIAL_DIR`, `AKASHI_FORM_DATA_DIR` (defaults to FORM's Electron
 userData under `%APPDATA%`), `AKASHI_SPATIAL_INTERPRETER=auto|rules`.
 
-## 12. Extension points (not implemented in V1)
+## 12. Remote presence (V1.5)
+
+Other devices (iPhone, Mac, another laptop) join a Spatial Lab session through
+[remote presence](remote-presence.md): they render the authoritative scene, drive
+it with touch, on-device camera hands, text and voice, see other devices' live
+previews and decide approvals they are allowed to. Every remote change is an
+ordinary request with `origin.kind = "remote"` and device/session/modality
+provenance; `GET /spatial/sessions/{id}/objects/{obj}/provenance` (and "why did
+it move?") explains any object's state. Requests carry `base_revision`; leases are
+owner-bound and released when a device leaves. Acceptance:
+[remote-spatial-presence-v1-5.md](acceptance/remote-spatial-presence-v1-5.md).
+
+## 13. Extension points (not implemented)
 
 * Depth / occlusion / anchoring: add `z` from a depth provider into
   `InteractionEngine` (it already works in world space) and a depth-aware
   projector; the scene document needs no change.
-* WebXR / mobile / remote devices: new `HandInputProvider`s and `Origin.kind:
-  "remote"` already exist in the contract.
+* WebXR: a new `HandInputProvider`; remote devices already work (§12).
 * Richer gestures: add pose machines in `poses.ts` and intents in
   `interaction.ts`; commands stay the same.
 * Other domains adopting `app/history`: implement a pure reducer, store logs

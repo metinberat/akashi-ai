@@ -25,7 +25,7 @@ request back to Core over `/chat`; only the conversational audio is direct.
 
 The established `/health`, `/chat`, and `/image/*` contracts remain available.
 New system capabilities are additive under `/memory`, `/research`, `/tools`,
-`/tasks`, `/files`, `/devices`, `/events`, `/system`, and `/spatial`.
+`/tasks`, `/files`, `/devices`, `/events`, `/system`, `/spatial`, and `/remote`.
 
 Start with [Development](docs/development.md), then review the
 [Architecture](docs/architecture.md) and [Security model](docs/security.md).
@@ -43,5 +43,12 @@ UI and AKASHI tools through one validated command path with undo/redo and
 deterministic replay: [architecture](docs/spatial-lab.md) and
 [local acceptance contract](docs/acceptance/spatial-lab-v1.md). Physical webcam,
 GPU and packaged-desktop behaviour still require local acceptance.
+
+**Remote presence (V1.5)** lets an iPhone, Mac or another laptop pair with a
+one-time code and join as a scoped device: it sees the authoritative scene,
+drives it by touch, on-device hand tracking, text or voice, and decides approvals
+it is allowed to; Core records every remote change with device provenance.
+Camera and microphone data stay on the device: [design](docs/remote-presence.md),
+[local acceptance contract](docs/acceptance/remote-spatial-presence-v1-5.md).
 
 AI agents working in this repository follow [AI_ENGINEERING_RULES.md](AI_ENGINEERING_RULES.md).

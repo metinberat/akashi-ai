@@ -79,6 +79,27 @@ function discoverPython(variable) {
   return path.resolve(executable);
 }
 
+/**
+ * Extra CORS origins for remote presence clients (e.g. "capacitor://localhost" for the
+ * AKASHI phone app, or the HTTPS origin serving /remote). Explicit opt-in via
+ * AKASHI_REMOTE_ORIGINS; only well-formed origins without paths, never "*".
+ */
+function remoteOrigins(value) {
+  const accepted = [];
+  for (const raw of String(value || "").split(",")) {
+    const item = raw.trim();
+    if (!item) continue;
+    let url;
+    try { url = new URL(item); } catch { continue; }
+    if (!["https:", "capacitor:", "http:"].includes(url.protocol)) continue;
+    if (url.protocol === "http:" && !isLoopbackUrl(item)) continue;  // plain HTTP only for loopback development
+    if (url.username || url.password || url.search || url.hash || !/^\/?$/u.test(url.pathname)) continue;
+    const origin = url.protocol === "capacitor:" ? `capacitor://${url.host}` : url.origin;
+    if (!accepted.includes(origin)) accepted.push(origin);
+  }
+  return accepted.slice(0, 16);
+}
+
 function boundedEnvironment(additions) {
   const allowed = [
     "SystemRoot", "WINDIR", "PATH", "PATHEXT", "TEMP", "TMP", "USERPROFILE",
@@ -375,7 +396,7 @@ class DesktopRuntimeSupervisor extends EventEmitter {
         "AKASHI_MODEL_FAST_NAME", "AKASHI_MODEL_QUALITY_NAME",
         "AKASHI_MODEL_REASONING_NAME", "AKASHI_MODEL_VISION_NAME",
         "MISS_MINUTES_ENABLED", "MISS_MINUTES_TIMEZONE", "AKASHI_PROJECT_PATH",
-        "AKASHI_FORM_DATA_DIR", "AKASHI_SPATIAL_INTERPRETER",
+        "AKASHI_FORM_DATA_DIR", "AKASHI_SPATIAL_INTERPRETER", "AKASHI_REMOTE_ENDPOINTS",
       ];
       for (const name of allowed) if (process.env[name]) inherited[name] = process.env[name];
       // AI_PROVIDER/GEMINI_API_KEY/GEMINI_MODEL never come from process.env: a packaged app has no
@@ -394,7 +415,7 @@ class DesktopRuntimeSupervisor extends EventEmitter {
         AKASHI_API_TOKEN: config.token,
         AKASHI_AGENT_TOKEN: this.getAgentToken(),
         AKASHI_AGENT_URL: `http://127.0.0.1:${this.agentPort}`,
-        AKASHI_CORS_ORIGINS: "akashi://app",
+        AKASHI_CORS_ORIGINS: ["akashi://app", ...remoteOrigins(process.env.AKASHI_REMOTE_ORIGINS)].join(","),
       });
       if (providerConfig.aiProvider) {
         this.logger.write("core", "provider_configured", { provider: providerConfig.aiProvider });
@@ -565,4 +586,5 @@ module.exports = {
   isLoopbackUrl,
   probeJson,
   redact,
+  remoteOrigins,
 };

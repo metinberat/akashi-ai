@@ -10,6 +10,7 @@ const {
   boundedEnvironment,
   isLoopbackUrl,
   redact,
+  remoteOrigins,
 } = require("../runtime-supervisor.cjs");
 
 test("runtime URL policy accepts loopback only", () => {
@@ -70,4 +71,11 @@ test("crash-loop protection becomes terminal after bounded failures", () => {
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test("remote presence origins are explicit, well-formed and never wildcards", () => {
+  assert.deepEqual(remoteOrigins(""), []);
+  assert.deepEqual(remoteOrigins("capacitor://localhost, https://akashi.lan:8443, https://akashi.lan:8443/"), ["capacitor://localhost", "https://akashi.lan:8443"]);
+  assert.deepEqual(remoteOrigins("*,https://evil.example/path,http://192.168.1.4:3100,https://user:pw@x.example,javascript:alert(1)"), []);
+  assert.deepEqual(remoteOrigins("http://localhost:3100"), ["http://localhost:3100"]);
 });

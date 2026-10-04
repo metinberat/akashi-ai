@@ -8,4 +8,6 @@
   `docs/development.md`.
 - Spatial Lab: `docs/spatial-lab.md` (architecture) and
   `docs/acceptance/spatial-lab-v1.md` (local acceptance contract).
+- Remote presence (V1.5): `docs/remote-presence.md` and
+  `docs/acceptance/remote-spatial-presence-v1-5.md`.
 - `frontend/CLAUDE.md` adds the Next.js-version notice for work inside `frontend/`.
